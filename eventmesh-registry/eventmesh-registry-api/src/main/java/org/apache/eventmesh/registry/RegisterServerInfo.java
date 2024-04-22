@@ -9,6 +9,7 @@ import java.util.Map;
 
 @ToString
 public class RegisterServerInfo {
+
     // different implementations will have different formats
     @Getter
     @Setter
@@ -37,5 +38,18 @@ public class RegisterServerInfo {
 
     public void addMetadata(String key, String value) {
         this.metadata.put(key, value);
+    }
+
+    public void setExtFields(Map<String, Object> extFields) {
+        if (extFields == null) {
+            this.extFields.clear();
+            return;
+        }
+
+        this.extFields = extFields;
+    }
+
+    public void addExtFields(String key, Object value) {
+        this.extFields.put(key, value);
     }
 }

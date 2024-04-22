@@ -1,18 +1,24 @@
 package com.apache.eventmesh.admin.server;
 
 import com.apache.eventmesh.admin.server.task.Task;
+import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.PagedList;
+import org.apache.eventmesh.registry.RegisterServerInfo;
 import org.apache.eventmesh.registry.RegistryService;
 
 public class AdminServer implements Admin {
 
-    private RegistryService registryService;
+    private final RegistryService registryService;
 
-//    private EventMeshAdminServerRegisterInfo registerInfo;
+    private final RegisterServerInfo adminServeInfo;
 
-    public AdminServer(RegistryService registryService) {
+    public AdminServer(RegistryService registryService, AdminServerProperties properties) {
         this.registryService = registryService;
-//        this.registerInfo = registerInfo;
+        this.adminServeInfo = new RegisterServerInfo();
+        adminServeInfo.setServiceName(Constants.ADMIN_SERVER_REGISTRY_NAME);
+        adminServeInfo.setHealth(true);
+        adminServeInfo.setAddress(IPUtils.getLocalAddress() + ":" + properties.getPort());
     }
 
 
@@ -43,12 +49,12 @@ public class AdminServer implements Admin {
 
     @Override
     public void start() {
-        registryService.register(null);
+        registryService.register(adminServeInfo);
     }
 
     @Override
     public void destroy() {
-        registryService.unRegister(null);
+        registryService.unRegister(adminServeInfo);
         registryService.shutdown();
     }
 }

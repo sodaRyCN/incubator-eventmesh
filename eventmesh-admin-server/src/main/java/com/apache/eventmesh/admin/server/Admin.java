@@ -4,7 +4,7 @@ import org.apache.eventmesh.common.utils.PagedList;
 
 import com.apache.eventmesh.admin.server.task.Task;
 
-public interface Admin extends ComponentLifeCycle{
+public interface Admin extends ComponentLifeCycle {
     /**
      * support for web or ops
      **/
