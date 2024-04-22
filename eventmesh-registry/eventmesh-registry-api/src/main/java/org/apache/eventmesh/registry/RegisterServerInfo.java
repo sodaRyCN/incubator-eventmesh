@@ -9,7 +9,6 @@ import java.util.Map;
 
 @ToString
 public class RegisterServerInfo {
-
     // different implementations will have different formats
     @Getter
     @Setter
