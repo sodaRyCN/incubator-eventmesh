@@ -1,12 +1,26 @@
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.registry.RegisterServerInfo;
+import org.apache.eventmesh.registry.RegistryFactory;
+import org.apache.eventmesh.registry.RegistryService;
 import org.apache.eventmesh.runtime.Runtime;
 import org.apache.eventmesh.runtime.RuntimeFactory;
 import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
-import org.apache.eventmesh.runtime.meta.MetaStorage;
+
 import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc;
 import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc.AdminBiStreamServiceStub;
 import org.apache.eventmesh.runtime.rpc.Payload;
+
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -20,9 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RuntimeInstance {
 
-    private String adminServerAddr = "localhost";
+    private String adminServerAddr;
 
-    private int adminServerPort = 50051;
+    private Map<String, RegisterServerInfo> adminServerInfoMap = new HashMap<>();
 
     private ManagedChannel channel;
 
@@ -32,69 +46,110 @@ public class RuntimeInstance {
 
     StreamObserver<Payload> requestObserver;
 
-    private MetaStorage metaStorage;
+    private final RegistryService registryService;
 
     private Runtime runtime;
 
     private RuntimeFactory runtimeFactory;
 
-    private RuntimeInstanceConfig runtimeInstanceConfig;
+    private final RuntimeInstanceConfig runtimeInstanceConfig;
+
+    private volatile boolean isStarted = false;
+
+    private ScheduledExecutorService heartBeatExecutor;
 
     public RuntimeInstance(RuntimeInstanceConfig runtimeInstanceConfig) {
         this.runtimeInstanceConfig = runtimeInstanceConfig;
-        this.metaStorage = MetaStorage.getInstance(runtimeInstanceConfig.getRegistryPluginType());
+        this.registryService = RegistryFactory.getInstance(runtimeInstanceConfig.getRegistryPluginType());
     }
 
-    public void init () {
-        metaStorage.init();
-
+    public void init() {
+        registryService.init();
+        registryService.subscribe((event) -> {
+            log.info("runtime receive registry event: {}", event);
+            List<RegisterServerInfo> registerServerInfoList = event.getInstances();
+            Map<String, RegisterServerInfo> registerServerInfoMap = new HashMap<>();
+            for (RegisterServerInfo registerServerInfo : registerServerInfoList) {
+                registerServerInfoMap.put(registerServerInfo.getAddress(), registerServerInfo);
+            }
+            adminServerInfoMap = registerServerInfoMap;
+            updateAdminServerAddr();
+        }, runtimeInstanceConfig.getAdminServiceName());
     }
 
     public void start() {
-        metaStorage.start();
-
-        // TODO：从registry发现admin server地址列表
-
-        // 创建gRPC通道
-        channel = ManagedChannelBuilder.forAddress(adminServerAddr, adminServerPort)
-            .usePlaintext()
-            .build();
-
-        adminStub = AdminBiStreamServiceGrpc.newStub(channel);
-
-        responseObserver = new StreamObserver<Payload>() {
-            @Override
-            public void onNext(Payload response) {
-                log.info("runtime receive message: {} ", response);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                log.error("runtime receive error message: {}", t.getMessage());
-            }
-
-            @Override
-            public void onCompleted() {
-                log.info("runtime finished receive message and completed");
-            }
-        };
-
-        requestObserver = adminStub.invokeBiStream(responseObserver);
-        StringValue stringValue = StringValue.newBuilder().setValue("test").build();
-        Any test = Any.pack(stringValue);
-        // 发送请求
-        for (int i = 0; i < 10; i++) {
-            Payload request = Payload.newBuilder()
-                .setBody(test)
+        if (!StringUtils.isBlank(adminServerAddr)) {
+            // create gRPC channel
+            channel = ManagedChannelBuilder.forTarget(adminServerAddr)
+                .usePlaintext()
                 .build();
-            requestObserver.onNext(request);
-        }
 
+            adminStub = AdminBiStreamServiceGrpc.newStub(channel).withWaitForReady();
+
+            responseObserver = new StreamObserver<Payload>() {
+                @Override
+                public void onNext(Payload response) {
+                    log.info("runtime receive message: {} ", response);
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    log.error("runtime receive error message: {}", t.getMessage());
+                }
+
+                @Override
+                public void onCompleted() {
+                    log.info("runtime finished receive message and completed");
+                }
+            };
+
+            requestObserver = adminStub.invokeBiStream(responseObserver);
+
+            heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();
+            heartBeatExecutor.scheduleAtFixedRate(() -> {
+
+                StringValue stringValue = StringValue.newBuilder().setValue("heartbeat").build();
+                Any heartbeat = Any.pack(stringValue);
+                Payload request = Payload.newBuilder()
+                    .setBody(heartbeat)
+                    .build();
+
+                requestObserver.onNext(request);
+            }, 5, 5, TimeUnit.SECONDS);
+            isStarted = true;
+        } else {
+            throw new RuntimeException("admin server address is empty, please check");
+        }
     }
 
-    public void shutdown(){
+    public void shutdown() {
+        if (heartBeatExecutor != null) {
+            heartBeatExecutor.shutdown();
+        }
         requestObserver.onCompleted();
-        channel.shutdown();
+        if (channel != null && !channel.isShutdown()) {
+            channel.shutdown();
+        }
+    }
+
+    private void updateAdminServerAddr() {
+        if (isStarted) {
+            if (!adminServerInfoMap.containsKey(adminServerAddr)) {
+                adminServerAddr = getRandomAdminServerAddr(adminServerInfoMap);
+                log.info("admin server address changed to: {}", adminServerAddr);
+                shutdown();
+                start();
+            }
+        } else {
+            adminServerAddr = getRandomAdminServerAddr(adminServerInfoMap);
+        }
+    }
+
+    private String getRandomAdminServerAddr(Map<String, RegisterServerInfo> adminServerInfoMap) {
+        ArrayList<String> addresses = new ArrayList<>(adminServerInfoMap.keySet());
+        Random random = new Random();
+        int randomIndex = random.nextInt(addresses.size());
+        return addresses.get(randomIndex);
     }
 
 }

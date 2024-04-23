@@ -16,6 +16,8 @@ public class RuntimeInstanceConfig {
 
         private String storagePluginType;
 
+        private String adminServiceName;
+
         private String runtimeInstanceId;
 
         private String runtimeInstanceName;
