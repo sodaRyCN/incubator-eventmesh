@@ -1,7 +1,5 @@
-package com.apache.eventmesh.admin.server;
+package org.apache.eventmesh.common.adminserver;
 
-import com.apache.eventmesh.admin.server.task.JobState;
-import com.apache.eventmesh.admin.server.task.Position;
 import lombok.Data;
 
 @Data

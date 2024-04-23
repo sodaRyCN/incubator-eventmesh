@@ -1,4 +1,4 @@
-package com.apache.eventmesh.admin.server.task;
+package org.apache.eventmesh.common.adminserver;
 
 public class Job {
     private long id;

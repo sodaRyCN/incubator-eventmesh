@@ -1,7 +1,8 @@
 package com.apache.eventmesh.admin.server;
 
-import com.apache.eventmesh.admin.server.task.Task;
+import org.apache.eventmesh.common.adminserver.Task;
 import org.apache.eventmesh.common.Constants;
+import org.apache.eventmesh.common.adminserver.HeartBeat;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.PagedList;
 import org.apache.eventmesh.registry.RegisterServerInfo;

@@ -1,8 +1,9 @@
 package com.apache.eventmesh.admin.server;
 
+import org.apache.eventmesh.common.adminserver.HeartBeat;
 import org.apache.eventmesh.common.utils.PagedList;
 
-import com.apache.eventmesh.admin.server.task.Task;
+import org.apache.eventmesh.common.adminserver.Task;
 
 public interface Admin extends ComponentLifeCycle {
     /**
