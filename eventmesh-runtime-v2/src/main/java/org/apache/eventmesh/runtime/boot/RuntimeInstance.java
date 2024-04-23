@@ -1,5 +1,8 @@
 package org.apache.eventmesh.runtime.boot;
 
+import org.apache.eventmesh.common.adminserver.HeartBeat;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.registry.QueryInstances;
 import org.apache.eventmesh.registry.RegisterServerInfo;
 import org.apache.eventmesh.registry.RegistryFactory;
 import org.apache.eventmesh.registry.RegistryService;
@@ -9,6 +12,7 @@ import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
 
 import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc;
 import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc.AdminBiStreamServiceStub;
+import org.apache.eventmesh.runtime.rpc.Metadata;
 import org.apache.eventmesh.runtime.rpc.Payload;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,16 +69,15 @@ public class RuntimeInstance {
 
     public void init() {
         registryService.init();
-        registryService.subscribe((event) -> {
-            log.info("runtime receive registry event: {}", event);
-            List<RegisterServerInfo> registerServerInfoList = event.getInstances();
-            Map<String, RegisterServerInfo> registerServerInfoMap = new HashMap<>();
-            for (RegisterServerInfo registerServerInfo : registerServerInfoList) {
-                registerServerInfoMap.put(registerServerInfo.getAddress(), registerServerInfo);
-            }
-            adminServerInfoMap = registerServerInfoMap;
-            updateAdminServerAddr();
-        }, runtimeInstanceConfig.getAdminServiceName());
+        QueryInstances queryInstances = new QueryInstances();
+        queryInstances.setServiceName(runtimeInstanceConfig.getAdminServiceName());
+        queryInstances.setHealth(true);
+        List<RegisterServerInfo> adminServerRegisterInfoList = registryService.selectInstances(queryInstances);
+        if (!adminServerRegisterInfoList.isEmpty()) {
+            adminServerAddr = getRandomAdminServerAddr(adminServerRegisterInfoList);
+        } else {
+            throw new RuntimeException("admin server address is empty, please check");
+        }
     }
 
     public void start() {
@@ -108,14 +111,34 @@ public class RuntimeInstance {
             heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();
             heartBeatExecutor.scheduleAtFixedRate(() -> {
 
-                StringValue stringValue = StringValue.newBuilder().setValue("heartbeat").build();
-                Any heartbeat = Any.pack(stringValue);
+                HeartBeat heartBeat = HeartBeat.newBuilder()
+                    .setAddress(IPUtils.getLocalAddress())
+                    .setReportedTimeStamp(String.valueOf(System.currentTimeMillis()))
+                    .build();
+
+
+                Metadata metadata = Metadata.newBuilder()
+                    .setType(HeartBeat.class.getSimpleName())
+                    .build();
+
                 Payload request = Payload.newBuilder()
-                    .setBody(heartbeat)
+                    .setMetadata(metadata)
+                    .setBody(Any.pack(heartBeat))
                     .build();
 
                 requestObserver.onNext(request);
             }, 5, 5, TimeUnit.SECONDS);
+
+            registryService.subscribe((event) -> {
+                log.info("runtime receive registry event: {}", event);
+                List<RegisterServerInfo> registerServerInfoList = event.getInstances();
+                Map<String, RegisterServerInfo> registerServerInfoMap = new HashMap<>();
+                for (RegisterServerInfo registerServerInfo : registerServerInfoList) {
+                    registerServerInfoMap.put(registerServerInfo.getAddress(), registerServerInfo);
+                }
+                adminServerInfoMap = registerServerInfoMap;
+                updateAdminServerAddr();
+            }, runtimeInstanceConfig.getAdminServiceName());
             isStarted = true;
         } else {
             throw new RuntimeException("admin server address is empty, please check");
@@ -150,6 +173,12 @@ public class RuntimeInstance {
         Random random = new Random();
         int randomIndex = random.nextInt(addresses.size());
         return addresses.get(randomIndex);
+    }
+
+    private String getRandomAdminServerAddr(List<RegisterServerInfo> adminServerRegisterInfoList) {
+        Random random = new Random();
+        int randomIndex = random.nextInt(adminServerRegisterInfoList.size());
+        return adminServerRegisterInfoList.get(randomIndex).getAddress();
     }
 
 }
