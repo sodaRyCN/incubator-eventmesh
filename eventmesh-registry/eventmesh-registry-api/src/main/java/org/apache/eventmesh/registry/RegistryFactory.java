@@ -17,7 +17,7 @@ public class RegistryFactory {
     private static RegistryService registryBuilder(String registryPluginType) {
         RegistryService registryServiceExt = EventMeshExtensionFactory.getExtension(RegistryService.class, registryPluginType);
         if (registryServiceExt == null) {
-            String errorMsg = "can't load the metaService plugin, please check.";
+            String errorMsg = "can't load the registry plugin, please check.";
             log.error(errorMsg);
             throw new RuntimeException(errorMsg);
         }

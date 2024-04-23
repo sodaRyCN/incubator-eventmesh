@@ -4,7 +4,9 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.listener.Event;
 import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
@@ -127,7 +129,15 @@ public class NacosDiscoveryService implements RegistryService {
                 log.warn("already use same listener subscribe service name {}" ,serviceName);
                 return;
             }
-            EventListener eventListener = listener::onChange;
+            EventListener eventListener = new EventListener() {
+                @Override
+                public void onEvent(Event event) {
+                    if (!(event instanceof NamingEvent)) {
+                        log.warn("received notify event type isn't not as expected");
+                        return;
+                    }
+                }
+            };
             List<String> clusters ;
             if (serviceInfo.getClusters() == null || serviceInfo.getClusters().isEmpty()) {
                 clusters = new ArrayList<>();
