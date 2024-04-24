@@ -1,6 +1,10 @@
 package org.apache.eventmesh.runtime.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
+import org.apache.eventmesh.common.adminserver.HeartBeat;
+import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.utils.IPUtils;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.config.SinkConfig;
@@ -16,11 +20,26 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.runtime.Runtime;
 import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
+import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc;
+import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc.AdminBiStreamServiceStub;
+import org.apache.eventmesh.runtime.rpc.Metadata;
+import org.apache.eventmesh.runtime.rpc.Payload;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+
+import com.google.protobuf.Any;
+import com.google.protobuf.UnsafeByteOperations;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,6 +49,14 @@ public class ConnectorRuntime implements Runtime {
     private RuntimeInstanceConfig runtimeInstanceConfig;
 
     private ConnectorRuntimeConfig connectorRuntimeConfig;
+
+    private ManagedChannel channel;
+
+    private AdminBiStreamServiceStub adminStub;
+
+    StreamObserver<Payload> responseObserver;
+
+    StreamObserver<Payload> requestObserver;
 
     private Source sourceConnector;
 
@@ -41,7 +68,9 @@ public class ConnectorRuntime implements Runtime {
     private final ExecutorService startService =
         ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-startService");
 
-    private BlockingQueue<ConnectRecord> queue;
+    private final ScheduledExecutorService heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();;
+
+    private final BlockingQueue<ConnectRecord> queue;
 
     private volatile boolean isRunning = false;
 
@@ -53,6 +82,8 @@ public class ConnectorRuntime implements Runtime {
 
     @Override
     public void init() throws Exception {
+        connectorRuntimeConfig = ConfigService.getInstance().buildConfigInstance(ConnectorRuntimeConfig.class);
+
         ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
             connectorRuntimeConfig.getSourceConnectorType());
         sourceConnector = (Source)sourceConnectorCreateService.create();
@@ -76,6 +107,54 @@ public class ConnectorRuntime implements Runtime {
     @Override
     public void start() throws Exception {
 
+        // create gRPC channel
+        channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServerAddr())
+            .usePlaintext()
+            .build();
+
+        adminStub = AdminBiStreamServiceGrpc.newStub(channel).withWaitForReady();
+
+        responseObserver = new StreamObserver<Payload>() {
+            @Override
+            public void onNext(Payload response) {
+                log.info("runtime receive message: {} ", response);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                log.error("runtime receive error message: {}", t.getMessage());
+            }
+
+            @Override
+            public void onCompleted() {
+                log.info("runtime finished receive message and completed");
+            }
+        };
+
+        requestObserver = adminStub.invokeBiStream(responseObserver);
+
+        //TODO: 根据connectorRuntimeConfig中的
+
+        heartBeatExecutor.scheduleAtFixedRate(() -> {
+
+            HeartBeat heartBeat = new HeartBeat();
+            heartBeat.setAddress(IPUtils.getLocalAddress());
+            heartBeat.setReportedTimeStamp(String.valueOf(System.currentTimeMillis()));
+            // TODO: add more info for heartBeat
+
+            Metadata metadata = Metadata.newBuilder()
+                .setType(HeartBeat.class.getSimpleName())
+                .build();
+
+            Payload request = Payload.newBuilder()
+                .setMetadata(metadata)
+                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
+                    unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(heartBeat)))).build())
+                .build();
+
+            requestObserver.onNext(request);
+        }, 5, 5, TimeUnit.SECONDS);
+
 //        sourceConnector.start();
 //        sourceConnector.poll();
 // start offsetMgmtService
@@ -98,7 +177,11 @@ public class ConnectorRuntime implements Runtime {
 
     @Override
     public void stop() throws Exception {
-
+        heartBeatExecutor.shutdown();
+        requestObserver.onCompleted();
+        if (channel != null && !channel.isShutdown()) {
+            channel.shutdown();
+        }
     }
 
     private void startSourceConnector() throws Exception {

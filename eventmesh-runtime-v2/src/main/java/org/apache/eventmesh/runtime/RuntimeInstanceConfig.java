@@ -1,6 +1,7 @@
 package org.apache.eventmesh.runtime;
 
 import org.apache.eventmesh.common.config.Config;
+import org.apache.eventmesh.common.enums.ComponentType;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,13 +19,15 @@ public class RuntimeInstanceConfig {
 
         private String adminServiceName;
 
+        private String adminServerAddr;
+
+        private ComponentType componentType;
+
         private String runtimeInstanceId;
 
         private String runtimeInstanceName;
 
         private String runtimeInstanceDesc;
-
-        private String runtimeInstanceType;
 
         private String runtimeInstanceVersion;
 
