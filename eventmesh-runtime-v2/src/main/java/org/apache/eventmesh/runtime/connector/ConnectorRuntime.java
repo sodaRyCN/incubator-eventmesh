@@ -68,7 +68,7 @@ public class ConnectorRuntime implements Runtime {
     private final ExecutorService startService =
         ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-startService");
 
-    private final ScheduledExecutorService heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();;
+    private final ScheduledExecutorService heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();
 
     private final BlockingQueue<ConnectRecord> queue;
 
@@ -83,6 +83,8 @@ public class ConnectorRuntime implements Runtime {
     @Override
     public void init() throws Exception {
         connectorRuntimeConfig = ConfigService.getInstance().buildConfigInstance(ConnectorRuntimeConfig.class);
+
+        //TODO: 根据connectorRuntimeConfig中的jobId，从adminServer获取connectorRuntimeConfig信息，然后初始化connector
 
         ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
             connectorRuntimeConfig.getSourceConnectorType());
@@ -133,7 +135,6 @@ public class ConnectorRuntime implements Runtime {
 
         requestObserver = adminStub.invokeBiStream(responseObserver);
 
-        //TODO: 根据connectorRuntimeConfig中的
 
         heartBeatExecutor.scheduleAtFixedRate(() -> {
 
