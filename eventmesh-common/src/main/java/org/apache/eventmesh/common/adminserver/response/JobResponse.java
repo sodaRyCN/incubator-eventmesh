@@ -2,7 +2,7 @@ package org.apache.eventmesh.common.adminserver.response;
 
 import org.apache.eventmesh.common.adminserver.job.JobTransportType;
 
-public class JobDetailsResponse extends BaseResponse{
+public class JobResponse extends BaseResponse{
     private long id;
     private String name;
     private String desc;

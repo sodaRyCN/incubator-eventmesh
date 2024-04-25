@@ -2,6 +2,8 @@ package org.apache.eventmesh.runtime.connector;
 
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.adminserver.HeartBeat;
+import org.apache.eventmesh.common.adminserver.request.JobRequest;
+import org.apache.eventmesh.common.adminserver.response.JobResponse;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -82,33 +84,6 @@ public class ConnectorRuntime implements Runtime {
 
     @Override
     public void init() throws Exception {
-        connectorRuntimeConfig = ConfigService.getInstance().buildConfigInstance(ConnectorRuntimeConfig.class);
-
-        //TODO: 根据connectorRuntimeConfig中的jobId，从adminServer获取connectorRuntimeConfig信息，然后初始化connector
-
-        ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
-            connectorRuntimeConfig.getSourceConnectorType());
-        sourceConnector = (Source)sourceConnectorCreateService.create();
-
-        SourceConfig sourceConfig = (SourceConfig) ConfigUtil.parse(connectorRuntimeConfig.getSourceConnectorConfig(), sourceConnector.configClass());
-        SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
-        sourceConnectorContext.setSourceConfig(sourceConfig);
-//        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
-
-        sourceConnector.init(sourceConnectorContext);
-
-        ConnectorCreateService<?> sinkConnectorCreateService = ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSinkConnectorType());
-        sinkConnector = (Sink)sinkConnectorCreateService.create();
-
-        SinkConfig sinkConfig = (SinkConfig) ConfigUtil.parse(connectorRuntimeConfig.getSinkConnectorConfig(), sinkConnector.configClass());
-        SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
-        sinkConnectorContext.setSinkConfig(sinkConfig);
-        sinkConnector.init(sinkConnectorContext);
-    }
-
-    @Override
-    public void start() throws Exception {
-
         // create gRPC channel
         channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServerAddr())
             .usePlaintext()
@@ -135,6 +110,51 @@ public class ConnectorRuntime implements Runtime {
 
         requestObserver = adminStub.invokeBiStream(responseObserver);
 
+        connectorRuntimeConfig = ConfigService.getInstance().buildConfigInstance(ConnectorRuntimeConfig.class);
+
+        fetchJobConfig();
+
+        ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
+            connectorRuntimeConfig.getSourceConnectorType());
+        sourceConnector = (Source)sourceConnectorCreateService.create();
+
+        SourceConfig sourceConfig = (SourceConfig) ConfigUtil.parse(connectorRuntimeConfig.getSourceConnectorConfig(), sourceConnector.configClass());
+        SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
+        sourceConnectorContext.setSourceConfig(sourceConfig);
+//        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
+
+        sourceConnector.init(sourceConnectorContext);
+
+        ConnectorCreateService<?> sinkConnectorCreateService = ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSinkConnectorType());
+        sinkConnector = (Sink)sinkConnectorCreateService.create();
+
+        SinkConfig sinkConfig = (SinkConfig) ConfigUtil.parse(connectorRuntimeConfig.getSinkConnectorConfig(), sinkConnector.configClass());
+        SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
+        sinkConnectorContext.setSinkConfig(sinkConfig);
+        sinkConnector.init(sinkConnectorContext);
+    }
+
+    private void fetchJobConfig() {
+        String jobId = connectorRuntimeConfig.getJobID();
+        //TODO: 根据connectorRuntimeConfig中的jobId，从adminServer获取connectorRuntimeConfig信息，然后初始化connector
+        JobRequest jobRequest = new JobRequest();
+        jobRequest.setJobID(jobId);
+
+        Metadata metadata = Metadata.newBuilder()
+            .setType(JobRequest.class.getSimpleName())
+            .build();
+
+        Payload request = Payload.newBuilder()
+            .setMetadata(metadata)
+            .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
+                unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(jobRequest)))).build())
+            .build();
+
+        requestObserver.onNext(request);
+    }
+
+    @Override
+    public void start() throws Exception {
 
         heartBeatExecutor.scheduleAtFixedRate(() -> {
 
