@@ -12,14 +12,11 @@ message Metadata {
 
 message Payload {
     Metadata metadata = 2;
-    google.protobuf.Any body = 3;
-}
-
-service AdminBiStreamService {
-  rpc invokeBiStream(stream Payload) returns (stream Payload){}
+    bytes body = 3;
 }
 
 service AdminService {
+  rpc invokeBiStream(stream Payload) returns (stream Payload){}
   rpc invoke(Payload) returns (Payload){}
 }
 
