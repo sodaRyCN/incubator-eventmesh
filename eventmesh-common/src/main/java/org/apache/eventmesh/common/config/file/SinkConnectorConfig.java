@@ -15,15 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.sink.config;
-
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+package org.apache.eventmesh.common.config.file;
 
 import lombok.Data;
 
 @Data
-public class KafkaSinkConfig extends SinkConfig {
+public class SinkConnectorConfig {
 
-    public SinkConnectorConfig connectorConfig;
+    private String connectorName;
 
+    private String topic;
 }

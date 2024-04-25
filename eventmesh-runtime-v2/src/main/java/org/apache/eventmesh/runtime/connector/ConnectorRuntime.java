@@ -1,9 +1,18 @@
 package org.apache.eventmesh.runtime.connector;
 
+import org.apache.eventmesh.api.consumer.Consumer;
+import org.apache.eventmesh.api.factory.StoragePluginFactory;
+import org.apache.eventmesh.api.producer.Producer;
 import org.apache.eventmesh.common.ThreadPoolFactory;
 import org.apache.eventmesh.common.adminserver.HeartBeat;
-import org.apache.eventmesh.common.adminserver.request.JobRequest;
+import org.apache.eventmesh.common.adminserver.request.FetchJobRequest;
+import org.apache.eventmesh.common.adminserver.response.FetchJobResponse;
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
@@ -18,10 +27,6 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.runtime.Runtime;
 import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
-import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc;
-import org.apache.eventmesh.runtime.rpc.AdminBiStreamServiceGrpc.AdminBiStreamServiceStub;
-import org.apache.eventmesh.runtime.rpc.Metadata;
-import org.apache.eventmesh.runtime.rpc.Payload;
 
 import java.util.List;
 import java.util.Objects;
@@ -50,7 +55,9 @@ public class ConnectorRuntime implements Runtime {
 
     private ManagedChannel channel;
 
-    private AdminBiStreamServiceStub adminStub;
+    private AdminServiceStub adminServiceStub;
+
+    private AdminServiceBlockingStub adminServiceBlockingStub;
 
     StreamObserver<Payload> responseObserver;
 
@@ -59,6 +66,10 @@ public class ConnectorRuntime implements Runtime {
     private Source sourceConnector;
 
     private Sink sinkConnector;
+
+    private Producer producer;
+
+    private Consumer consumer;
 
     private final ExecutorService sourceService =
         ThreadPoolFactory.createSingleExecutor("eventMesh-sourceService");
@@ -85,7 +96,13 @@ public class ConnectorRuntime implements Runtime {
             .usePlaintext()
             .build();
 
-        adminStub = AdminBiStreamServiceGrpc.newStub(channel).withWaitForReady();
+        adminServiceStub = AdminServiceGrpc.newStub(channel).withWaitForReady();
+
+        adminServiceBlockingStub = AdminServiceGrpc.newBlockingStub(channel).withWaitForReady();
+
+        producer = StoragePluginFactory.getMeshMQProducer(runtimeInstanceConfig.getStoragePluginType());
+
+        consumer = StoragePluginFactory.getMeshMQPushConsumer(runtimeInstanceConfig.getStoragePluginType());
 
         responseObserver = new StreamObserver<Payload>() {
             @Override
@@ -104,11 +121,17 @@ public class ConnectorRuntime implements Runtime {
             }
         };
 
-        requestObserver = adminStub.invokeBiStream(responseObserver);
+        requestObserver = adminServiceStub.invokeBiStream(responseObserver);
 
         connectorRuntimeConfig = ConfigService.getInstance().buildConfigInstance(ConnectorRuntimeConfig.class);
 
-        fetchJobConfig();
+        FetchJobResponse jobResponse = fetchJobConfig();
+
+        if (jobResponse == null) {
+            throw new RuntimeException("fetch job config fail");
+        }
+
+        jobResponse.
 
         ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
             connectorRuntimeConfig.getSourceConnectorType());
@@ -130,14 +153,13 @@ public class ConnectorRuntime implements Runtime {
         sinkConnector.init(sinkConnectorContext);
     }
 
-    private void fetchJobConfig() {
+    private FetchJobResponse fetchJobConfig() {
         String jobId = connectorRuntimeConfig.getJobID();
-        //TODO: 根据connectorRuntimeConfig中的jobId，从adminServer获取connectorRuntimeConfig信息，然后初始化connector
-        JobRequest jobRequest = new JobRequest();
-        jobRequest.setJobID(jobId);
+        FetchJobRequest jobRequest = new FetchJobRequest();
+        jobRequest.setPrimaryKey(jobId);
 
         Metadata metadata = Metadata.newBuilder()
-            .setType(JobRequest.class.getSimpleName())
+            .setType(FetchJobRequest.class.getSimpleName())
             .build();
 
         Payload request = Payload.newBuilder()
@@ -145,8 +167,11 @@ public class ConnectorRuntime implements Runtime {
             .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
                 unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(jobRequest)))).build())
             .build();
-
-        requestObserver.onNext(request);
+        Payload response = adminServiceBlockingStub.invoke(request);
+        if (response.getMetadata().getType().equals(FetchJobResponse.class.getSimpleName())) {
+            return JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchJobResponse.class);
+        }
+        return null;
     }
 
     @Override

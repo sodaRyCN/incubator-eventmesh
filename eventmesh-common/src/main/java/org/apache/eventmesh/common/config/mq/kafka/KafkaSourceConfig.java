@@ -15,25 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.sink.config;
+package org.apache.eventmesh.common.config.mq.kafka;
+
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 
 import lombok.Data;
 
 @Data
-public class SinkConnectorConfig {
+public class KafkaSourceConfig extends SourceConfig {
 
-    private String connectorName = "kafkaSink";
-    private String topic = "TopicTest";
-    private String ack = "all";
-    private String bootstrapServers = "127.0.0.1:9092";
-    private String keyConverter = "org.apache.kafka.common.serialization.StringSerializer";
-    private String valueConverter = "org.apache.kafka.common.serialization.StringSerializer";
-    private String maxRequestSize = "1048576";
-    private String bufferMemory = "33554432";
-    private String batchSize = "16384";
-    private String lingerMs = "0";
-    private String requestTimeoutMs = "30000";
-    private String maxInFightRequestsPerConnection = "5";
-    private String retries = "0";
-    private String compressionType = "none";
+    public SourceConnectorConfig connectorConfig;
 }

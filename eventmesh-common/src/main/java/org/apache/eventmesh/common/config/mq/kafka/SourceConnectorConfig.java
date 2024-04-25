@@ -15,16 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.source.config;
-
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+package org.apache.eventmesh.common.config.mq.kafka;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class HttpSourceConfig extends SourceConfig {
+public class SourceConnectorConfig {
 
-    public SourceConnectorConfig connectorConfig;
+    private String connectorName = "kafkaSource";
+    private String topic = "TopicTest";
+    private String bootstrapServers = "127.0.0.1:9092";
+    private String groupID = "kafkaSource";
+    private String keyConverter = "org.apache.kafka.common.serialization.StringDeserializer";
+    private String valueConverter = "org.apache.kafka.common.serialization.StringDeserializer";
+    private String autoCommitIntervalMS = "1000";
+    private String enableAutoCommit = "false";
+    private String sessionTimeoutMS = "10000";
+    private String maxPollRecords = "1000";
+    private int pollTimeOut = 100;
 }

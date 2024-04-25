@@ -15,16 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.file.source.config;
+package org.apache.eventmesh.common.config.connector;
 
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class FileSourceConfig extends SourceConfig {
+public abstract class SourceConfig extends Config {
 
-    public SourceConnectorConfig connectorConfig;
+    private PubSubConfig pubSubConfig;
+
+    private OffsetStorageConfig offsetStorageConfig;
+
 }

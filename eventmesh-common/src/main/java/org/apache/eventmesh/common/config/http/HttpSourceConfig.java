@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.http.source.config;
+package org.apache.eventmesh.common.config.http;
+
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
-public class SourceConnectorConfig {
+@EqualsAndHashCode(callSuper = true)
+public class HttpSourceConfig extends SourceConfig {
 
-    private String connectorName;
-
-    private String path;
-
-    private int port;
-
-    private int idleTimeout;
+    public SourceConnectorConfig connectorConfig;
 }

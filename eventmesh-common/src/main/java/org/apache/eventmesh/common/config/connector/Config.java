@@ -15,21 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.file.sink.config;
+package org.apache.eventmesh.common.config.connector;
 
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class FileSinkConfig extends SinkConfig {
-
-    public SinkConnectorConfig connectorConfig;
-
-    private Integer flushSize = 1000;
-
-    private boolean hourlyFlushEnabled = false;
-
+public abstract class Config {
 }

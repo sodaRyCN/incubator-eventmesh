@@ -15,14 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.file.sink.config;
+package org.apache.eventmesh.common.config.connector;
 
 import lombok.Data;
 
 @Data
-public class SinkConnectorConfig {
+public class PubSubConfig {
 
-    private String connectorName;
+    private String meshAddress;
 
-    private String topic;
+    private String subject;
+
+    private String idc;
+
+    private String env;
+
+    private String group;
+
+    private String appId;
+
+    private String userName;
+
+    private String passWord;
+
 }

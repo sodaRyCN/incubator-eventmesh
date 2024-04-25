@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.kafka.source.config;
-
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+package org.apache.eventmesh.common.config.file;
 
 import lombok.Data;
 
 @Data
-public class KafkaSourceConfig extends SourceConfig {
+public class SourceConnectorConfig {
 
-    public SourceConnectorConfig connectorConfig;
+    private String connectorName;
+
+    private String filePath;
 }

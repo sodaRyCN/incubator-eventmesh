@@ -2,7 +2,11 @@ package org.apache.eventmesh.common.adminserver.response;
 
 import org.apache.eventmesh.common.adminserver.job.JobTransportType;
 
-public class FetchJobResponse extends BaseResponse{
+import lombok.Data;
+
+@Data
+public class FetchJobResponse extends BaseResponse {
+
     private long id;
     private String name;
     private String desc;

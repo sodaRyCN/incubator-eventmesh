@@ -15,7 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.common.config.mq.kafka;
 
-public abstract class Config {
+import org.apache.eventmesh.common.config.connector.SinkConfig;
+
+import lombok.Data;
+
+@Data
+public class KafkaSinkConfig extends SinkConfig {
+
+    public SinkConnectorConfig connectorConfig;
+
 }

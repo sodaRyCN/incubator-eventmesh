@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.api.config;
+package org.apache.eventmesh.common.config.connector;
+
+import org.apache.eventmesh.common.config.connector.Config;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
