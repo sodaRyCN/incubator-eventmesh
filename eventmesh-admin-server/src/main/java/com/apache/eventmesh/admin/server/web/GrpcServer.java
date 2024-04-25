@@ -36,7 +36,9 @@ public class GrpcServer extends BaseServer {
         try {
             if (server != null) {
                 server.shutdown();
-                server.awaitTermination(30, TimeUnit.SECONDS);
+                if(!server.awaitTermination(30, TimeUnit.SECONDS)) {
+                    log.warn("[{}] server don't graceful stop in 30s, it will shutdown now", this.getClass().getSimpleName());
+                }
             }
         } catch (Exception e) {
             log.warn("destroy [{}] server fail", this.getClass().getSimpleName(), e);

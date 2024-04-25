@@ -9,7 +9,7 @@ import javax.annotation.PreDestroy;
 @Slf4j
 public abstract class BaseServer implements ComponentLifeCycle {
     @PostConstruct
-    public void init() {
+    public void init() throws Exception {
         log.info("[{}] server starting at port [{}]", this.getClass().getSimpleName(), getPort());
         start();
         log.info("[{}] server started at port [{}]", this.getClass().getSimpleName(), getPort());
