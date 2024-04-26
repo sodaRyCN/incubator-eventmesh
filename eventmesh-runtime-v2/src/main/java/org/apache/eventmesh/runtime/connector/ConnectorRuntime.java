@@ -10,6 +10,7 @@ import org.apache.eventmesh.common.adminserver.response.FetchJobResponse;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
+import org.apache.eventmesh.common.config.offset.OffsetStorageConfig;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
@@ -24,12 +25,19 @@ import org.apache.eventmesh.openconnect.api.factory.ConnectorPluginFactory;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffsetManagement;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.DefaultOffsetManagementServiceImpl;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReaderImpl;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageWriterImpl;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 import org.apache.eventmesh.runtime.Runtime;
 import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
+import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -67,6 +75,16 @@ public class ConnectorRuntime implements Runtime {
 
     private Sink sinkConnector;
 
+    private OffsetStorageWriterImpl offsetStorageWriter;
+
+    private OffsetStorageReaderImpl offsetStorageReader;
+
+    private OffsetManagementService offsetManagementService;
+
+    private RecordOffsetManagement offsetManagement;
+
+    private volatile RecordOffsetManagement.CommittableOffsets committableOffsets;
+
     private Producer producer;
 
     private Consumer consumer;
@@ -74,8 +92,8 @@ public class ConnectorRuntime implements Runtime {
     private final ExecutorService sourceService =
         ThreadPoolFactory.createSingleExecutor("eventMesh-sourceService");
 
-    private final ExecutorService startService =
-        ThreadPoolFactory.createSingleExecutor("eventMesh-sourceWorker-startService");
+    private final ExecutorService sinkService =
+        ThreadPoolFactory.createSingleExecutor("eventMesh-sinkService");
 
     private final ScheduledExecutorService heartBeatExecutor = Executors.newSingleThreadScheduledExecutor();
 
@@ -91,6 +109,15 @@ public class ConnectorRuntime implements Runtime {
 
     @Override
     public void init() throws Exception {
+
+        initAdminService();
+
+        initStorageService();
+
+        initConnectorService();
+    }
+
+    private void initAdminService() {
         // create gRPC channel
         channel = ManagedChannelBuilder.forTarget(runtimeInstanceConfig.getAdminServerAddr())
             .usePlaintext()
@@ -99,10 +126,6 @@ public class ConnectorRuntime implements Runtime {
         adminServiceStub = AdminServiceGrpc.newStub(channel).withWaitForReady();
 
         adminServiceBlockingStub = AdminServiceGrpc.newBlockingStub(channel).withWaitForReady();
-
-        producer = StoragePluginFactory.getMeshMQProducer(runtimeInstanceConfig.getStoragePluginType());
-
-        consumer = StoragePluginFactory.getMeshMQPushConsumer(runtimeInstanceConfig.getStoragePluginType());
 
         responseObserver = new StreamObserver<Payload>() {
             @Override
@@ -122,6 +145,17 @@ public class ConnectorRuntime implements Runtime {
         };
 
         requestObserver = adminServiceStub.invokeBiStream(responseObserver);
+    }
+
+    private void initStorageService() {
+
+        producer = StoragePluginFactory.getMeshMQProducer(runtimeInstanceConfig.getStoragePluginType());
+
+        consumer = StoragePluginFactory.getMeshMQPushConsumer(runtimeInstanceConfig.getStoragePluginType());
+
+    }
+
+    private void initConnectorService() throws Exception {
 
         connectorRuntimeConfig = ConfigService.getInstance().buildConfigInstance(ConnectorRuntimeConfig.class);
 
@@ -146,7 +180,19 @@ public class ConnectorRuntime implements Runtime {
         SourceConfig sourceConfig = (SourceConfig) ConfigUtil.parse(connectorRuntimeConfig.getSourceConnectorConfig(), sourceConnector.configClass());
         SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
         sourceConnectorContext.setSourceConfig(sourceConfig);
-//        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
+        sourceConnectorContext.setOffsetStorageReader(offsetStorageReader);
+
+        // spi load offsetMgmtService
+        this.offsetManagement = new RecordOffsetManagement();
+        this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
+        OffsetStorageConfig offsetStorageConfig = sourceConfig.getOffsetStorageConfig();
+        this.offsetManagementService = Optional.ofNullable(offsetStorageConfig)
+            .map(OffsetStorageConfig::getOffsetStorageType)
+            .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
+            .orElse(new DefaultOffsetManagementServiceImpl());
+        this.offsetManagementService.initialize(offsetStorageConfig);
+        this.offsetStorageWriter = new OffsetStorageWriterImpl(sourceConnector.name(), offsetManagementService);
+        this.offsetStorageReader = new OffsetStorageReaderImpl(sourceConnector.name(), offsetManagementService);
 
         sourceConnector.init(sourceConnectorContext);
 
@@ -157,6 +203,7 @@ public class ConnectorRuntime implements Runtime {
         SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
         sinkConnectorContext.setSinkConfig(sinkConfig);
         sinkConnector.init(sinkConnectorContext);
+
     }
 
     private FetchJobResponse fetchJobConfig() {
@@ -188,7 +235,7 @@ public class ConnectorRuntime implements Runtime {
             HeartBeat heartBeat = new HeartBeat();
             heartBeat.setAddress(IPUtils.getLocalAddress());
             heartBeat.setReportedTimeStamp(String.valueOf(System.currentTimeMillis()));
-            // TODO: add more info for heartBeat
+            heartBeat.setJobID(connectorRuntimeConfig.getJobID());
 
             Metadata metadata = Metadata.newBuilder()
                 .setType(HeartBeat.class.getSimpleName())
@@ -203,12 +250,23 @@ public class ConnectorRuntime implements Runtime {
             requestObserver.onNext(request);
         }, 5, 5, TimeUnit.SECONDS);
 
-//        sourceConnector.start();
-//        sourceConnector.poll();
-// start offsetMgmtService
-//        offsetManagementService.start();
+
+        // start offsetMgmtService
+        offsetManagementService.start();
         isRunning = true;
-//        pollService.execute(this::startPollAndSend);
+        sinkService.execute(
+            () -> {
+                try {
+                    startSinkConnector();
+                } catch (Exception e) {
+                    log.error("sink connector [{}] start fail", sinkConnector.name(), e);
+                    try {
+                        this.stop();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            });
 
         sourceService.execute(
             () -> {
@@ -216,7 +274,11 @@ public class ConnectorRuntime implements Runtime {
                     startSourceConnector();
                 } catch (Exception e) {
                     log.error("source connector [{}] start fail", sourceConnector.name(), e);
-//                    this.stop();
+                    try {
+                        this.stop();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             });
 
@@ -237,10 +299,18 @@ public class ConnectorRuntime implements Runtime {
         while (isRunning) {
             List<ConnectRecord> connectorRecordList = sourceConnector.poll();
             if (connectorRecordList != null && !connectorRecordList.isEmpty()) {
-                for (ConnectRecord record : connectorRecordList) {
-                    queue.put(record);
-                }
+//                for (ConnectRecord record : connectorRecordList) {
+//                    queue.put(record);
+//                }
+                // TODO: producer pub to storage
             }
+        }
+    }
+
+    private void startSinkConnector() throws Exception {
+        sinkConnector.start();
+        while (isRunning) {
+            // TODO: consumer sub from storage
         }
     }
 }

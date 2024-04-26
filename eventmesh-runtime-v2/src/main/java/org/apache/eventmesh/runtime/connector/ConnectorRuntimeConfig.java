@@ -12,8 +12,6 @@ import lombok.NoArgsConstructor;
 @Config(path = "classPath://connector.yaml")
 public class ConnectorRuntimeConfig {
 
-    private String connectorName;
-
     private String connectorRuntimeInstanceId;
 
     private String jobID;
