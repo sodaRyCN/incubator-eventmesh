@@ -1,38 +1,35 @@
 package com.apache.eventmesh.admin.server.web.handler;
 
-import com.alibaba.nacos.api.remote.request.Request;
-import com.alibaba.nacos.api.remote.request.RequestMeta;
-import org.apache.eventmesh.common.adminserver.request.BaseRequest;
-import org.apache.eventmesh.common.adminserver.response.BaseResponse;
+import org.apache.eventmesh.common.remote.request.BaseGrpcRequest;
+import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
+@Component
 public class RequestHandlerFactory implements ApplicationListener<ContextRefreshedEvent> {
 
-    private final Map<String, AbstractRequestHandler<BaseRequest,BaseResponse>> handlers =
+    private final Map<String, BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse>> handlers =
             new ConcurrentHashMap<>();
 
-    public AbstractRequestHandler<BaseRequest, BaseResponse> getHandler(String type) {
+    public BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> getHandler(String type) {
         return handlers.get(type);
     }
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        Map<String, AbstractRequestHandler> beans =
-                event.getApplicationContext().getBeansOfType(AbstractRequestHandler.class);
+        Map<String, BaseRequestHandler> beans =
+                event.getApplicationContext().getBeansOfType(BaseRequestHandler.class);
 
-        for (AbstractRequestHandler<BaseRequest, BaseResponse> requestHandler : beans.values()) {
+        for (BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> requestHandler : beans.values()) {
             Class<?> clazz = requestHandler.getClass();
             boolean skip = false;
-            while (!clazz.getSuperclass().equals(AbstractRequestHandler.class)) {
+            while (!clazz.getSuperclass().equals(BaseRequestHandler.class)) {
                 if (clazz.getSuperclass().equals(Object.class)) {
                     skip = true;
                     break;
@@ -43,11 +40,6 @@ public class RequestHandlerFactory implements ApplicationListener<ContextRefresh
                 continue;
             }
 
-            try {
-                Method method = clazz.getMethod("handle", Request.class, RequestMeta.class);
-            } catch (Exception e) {
-                //ignore.
-            }
             Class tClass = (Class) ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
             handlers.putIfAbsent(tClass.getSimpleName(), requestHandler);
         }

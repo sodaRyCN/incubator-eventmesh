@@ -1,15 +1,16 @@
-package org.apache.eventmesh.common.adminserver.response;
+package org.apache.eventmesh.common.remote.response;
 
-import org.apache.eventmesh.common.adminserver.JobState;
-import org.apache.eventmesh.common.adminserver.Position;
-import org.apache.eventmesh.common.adminserver.job.JobTransportType;
+import org.apache.eventmesh.common.remote.JobState;
+import org.apache.eventmesh.common.remote.Position;
+import org.apache.eventmesh.common.remote.job.JobTransportType;
 
 import java.util.Map;
 
 import lombok.Data;
+import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
 
 @Data
-public class FetchJobResponse extends BaseResponse {
+public class FetchJobResponse extends BaseGrpcResponse {
 
     private long id;
 

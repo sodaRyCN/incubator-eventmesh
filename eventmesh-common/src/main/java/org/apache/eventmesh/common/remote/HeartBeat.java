@@ -1,4 +1,4 @@
-package org.apache.eventmesh.common.adminserver;
+package org.apache.eventmesh.common.remote;
 
 import lombok.Data;
 

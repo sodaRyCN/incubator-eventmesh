@@ -1,4 +1,4 @@
-package org.apache.eventmesh.common.adminserver;
+package org.apache.eventmesh.common.remote;
 
 public enum JobState {
     INIT,

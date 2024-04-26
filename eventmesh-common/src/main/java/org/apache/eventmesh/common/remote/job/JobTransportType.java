@@ -1,4 +1,4 @@
-package org.apache.eventmesh.common.adminserver.job;
+package org.apache.eventmesh.common.remote.job;
 
 public enum JobTransportType {
     MYSQL_MYSQL(DataSourceType.MYSQL, DataSourceType.MYSQL),

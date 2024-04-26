@@ -1,4 +1,4 @@
-package org.apache.eventmesh.common.adminserver;
+package org.apache.eventmesh.common.remote;
 
 // task : job = 1 : m
 public class Task {

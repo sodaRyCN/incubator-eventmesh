@@ -1,6 +1,6 @@
-package org.apache.eventmesh.common.adminserver.response;
+package org.apache.eventmesh.common.remote.response;
 
-public class FailResponse extends BaseResponse {
+public class FailResponse extends BaseGrpcResponse {
     public static FailResponse build(int errorCode, String msg) {
         FailResponse response = new FailResponse();
         response.setErrorCode(errorCode);
@@ -17,6 +17,6 @@ public class FailResponse extends BaseResponse {
      * @return response
      */
     public static FailResponse build(Throwable exception) {
-        return build(BaseResponse.UNKNOWN, exception.getMessage());
+        return build(BaseGrpcResponse.UNKNOWN, exception.getMessage());
     }
 }
