@@ -15,13 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.lark.sink.config;
-
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.lark.oapi.service.im.v1.enums.ReceiveIdTypeEnum;
+package org.apache.eventmesh.common.config.lark;
 
 import lombok.Data;
 
@@ -53,8 +47,6 @@ public class SinkConnectorConfig {
 
     /**
      * When sinking CouldEvent to lark, choose to call
-     * {@link org.apache.eventmesh.connector.lark.sink.ImServiceHandler#sink(ConnectRecord)}
-     * or {@link org.apache.eventmesh.connector.lark.sink.ImServiceHandler#sinkAsync(ConnectRecord)}
      */
     private String sinkAsync = "true";
 
@@ -62,20 +54,4 @@ public class SinkConnectorConfig {
 
     private String retryDelayInMills = "1000";
 
-    public void validateSinkConfiguration() {
-        // validate blank
-        if (StringUtils.isAnyBlank(appId, appSecret, receiveId)) {
-            throw new IllegalArgumentException("appId or appSecret or receiveId is blank,please check it.");
-        }
-
-        // validate receiveIdType
-        if (!StringUtils.containsAny(receiveIdType, ReceiveIdTypeEnum.CHAT_ID.getValue(),
-            ReceiveIdTypeEnum.EMAIL.getValue(),
-            ReceiveIdTypeEnum.OPEN_ID.getValue(),
-            ReceiveIdTypeEnum.USER_ID.getValue(),
-            ReceiveIdTypeEnum.UNION_ID.getValue())) {
-            throw new IllegalArgumentException(
-                String.format("sinkConnectorConfig.receiveIdType=[%s], Invalid.", receiveIdType));
-        }
-    }
 }

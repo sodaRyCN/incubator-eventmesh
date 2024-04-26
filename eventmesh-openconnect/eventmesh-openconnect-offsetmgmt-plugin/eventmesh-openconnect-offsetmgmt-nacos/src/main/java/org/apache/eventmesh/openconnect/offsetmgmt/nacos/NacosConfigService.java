@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.nacos;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.config.OffsetStorageConfig;
+import org.apache.eventmesh.common.config.offset.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.KeyValueStore;

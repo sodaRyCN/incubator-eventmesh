@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.mongodb.source.config;
+package org.apache.eventmesh.common.config.rdb.mongodb;
 
 import lombok.Data;
 
 @Data
-public class SourceConnectorConfig {
+public class SinkConnectorConfig {
 
     private String connectorName;
 
@@ -31,5 +31,4 @@ public class SourceConnectorConfig {
     private String database;
 
     private String collection;
-
 }

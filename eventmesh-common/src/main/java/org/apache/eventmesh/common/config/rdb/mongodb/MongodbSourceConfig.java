@@ -15,17 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.lark.sink.config;
+package org.apache.eventmesh.common.config.rdb.mongodb;
 
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class LarkSinkConfig extends SinkConfig {
+public class MongodbSourceConfig extends SourceConfig {
 
-    public SinkConnectorConfig sinkConnectorConfig;
-
+    public SourceConnectorConfig connectorConfig;
 }

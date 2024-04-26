@@ -24,7 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.apache.eventmesh.connector.lark.sink.config.LarkSinkConfig;
+import org.apache.eventmesh.common.config.lark.LarkSinkConfig;
 import org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;

@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.mongodb.source.config;
+package org.apache.eventmesh.common.config.offset;
 
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
+import java.util.Map;
 
 import lombok.Data;
 
 @Data
-public class MongodbSourceConfig extends SourceConfig {
+public class OffsetStorageConfig {
 
-    public SourceConnectorConfig connectorConfig;
+    private String offsetStorageType;
+
+    private String offsetStorageAddr;
+
+    private Map<String, String> extensions;
 }

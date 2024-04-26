@@ -15,18 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.config;
+package org.apache.eventmesh.common.config.rdb.mongodb;
 
-import java.util.Map;
+import org.apache.eventmesh.common.config.connector.SinkConfig;
 
 import lombok.Data;
 
 @Data
-public class OffsetStorageConfig {
+public class MongodbSinkConfig extends SinkConfig {
 
-    private String offsetStorageType;
-
-    private String offsetStorageAddr;
-
-    private Map<String, String> extensions;
+    public SinkConnectorConfig connectorConfig;
 }

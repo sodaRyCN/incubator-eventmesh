@@ -15,14 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.mongodb.sink.config;
-
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
+package org.apache.eventmesh.common.config.rdb.mongodb;
 
 import lombok.Data;
 
 @Data
-public class MongodbSinkConfig extends SinkConfig {
+public class SourceConnectorConfig {
 
-    public SinkConnectorConfig connectorConfig;
+    private String connectorName;
+
+    private String connectorType;
+
+    private String url;
+
+    private String database;
+
+    private String collection;
+
 }
