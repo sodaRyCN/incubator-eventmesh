@@ -1,7 +1,7 @@
 package org.apache.eventmesh.common.adminserver.response;
 
 public class FailResponse extends BaseResponse {
-    public static BaseResponse build(int errorCode, String msg) {
+    public static FailResponse build(int errorCode, String msg) {
         FailResponse response = new FailResponse();
         response.setErrorCode(errorCode);
         response.setDesc(msg);
@@ -16,7 +16,7 @@ public class FailResponse extends BaseResponse {
      * @param exception exception
      * @return response
      */
-    public static BaseResponse build(Throwable exception) {
+    public static FailResponse build(Throwable exception) {
         return build(BaseResponse.UNKNOWN, exception.getMessage());
     }
 }
