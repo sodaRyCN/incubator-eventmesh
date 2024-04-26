@@ -8,6 +8,8 @@ import org.apache.eventmesh.common.adminserver.HeartBeat;
 import org.apache.eventmesh.common.adminserver.request.FetchJobRequest;
 import org.apache.eventmesh.common.adminserver.response.FetchJobResponse;
 import org.apache.eventmesh.common.config.ConfigService;
+import org.apache.eventmesh.common.config.connector.SinkConfig;
+import org.apache.eventmesh.common.config.connector.SourceConfig;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
@@ -16,8 +18,6 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
-import org.apache.eventmesh.openconnect.api.config.SinkConfig;
-import org.apache.eventmesh.openconnect.api.config.SourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.factory.ConnectorPluginFactory;
@@ -131,7 +131,13 @@ public class ConnectorRuntime implements Runtime {
             throw new RuntimeException("fetch job config fail");
         }
 
-        jobResponse.
+        connectorRuntimeConfig.setSourceConnectorType(jobResponse.getTransportType().getSrc().getName());
+        connectorRuntimeConfig.setSourceConnectorDesc(jobResponse.getSourceConnectorDesc());
+        connectorRuntimeConfig.setSourceConnectorConfig(jobResponse.getSourceConnectorConfig());
+
+        connectorRuntimeConfig.setSinkConnectorType(jobResponse.getTransportType().getDst().getName());
+        connectorRuntimeConfig.setSinkConnectorDesc(jobResponse.getSinkConnectorDesc());
+        connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getSinkConnectorConfig());
 
         ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
             connectorRuntimeConfig.getSourceConnectorType());

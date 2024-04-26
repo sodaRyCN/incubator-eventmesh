@@ -13,4 +13,25 @@ public enum DataSourceType {
         this.driverType = driverType;
         this.classify = classify;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public DataSourceDriverType getDriverType() {
+        return driverType;
+    }
+
+    public DataSourceClassify getClassify() {
+        return classify;
+    }
+
+    public static DataSourceType getDataSourceType(String name) {
+        for (DataSourceType dataSourceType : DataSourceType.values()) {
+            if (dataSourceType.getName().equals(name)) {
+                return dataSourceType;
+            }
+        }
+        return null;
+    }
 }
