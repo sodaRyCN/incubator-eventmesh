@@ -148,7 +148,7 @@ public class ConnectorRuntime implements Runtime {
     }
 
     private void initStorageService() {
-
+        // TODO: init producer & consumer
         producer = StoragePluginFactory.getMeshMQProducer(runtimeInstanceConfig.getStoragePluginType());
 
         consumer = StoragePluginFactory.getMeshMQPushConsumer(runtimeInstanceConfig.getStoragePluginType());

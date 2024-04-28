@@ -86,6 +86,6 @@ public interface OffsetManagementService {
      */
     void removePosition(List<ConnectorRecordPartition> partitions);
 
-    void initialize(OffsetStorageConfig connectorConfig);
+    void initialize(OffsetStorageConfig offsetStorageConfig);
 
 }

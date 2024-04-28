@@ -55,6 +55,7 @@ include 'eventmesh-transformer'
 
 include 'eventmesh-openconnect:eventmesh-openconnect-java'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-api'
+include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-admin'
 include 'eventmesh-openconnect:eventmesh-openconnect-offsetmgmt-plugin:eventmesh-openconnect-offsetmgmt-nacos'
 
 include 'eventmesh-connectors:eventmesh-connector-openfunction'
