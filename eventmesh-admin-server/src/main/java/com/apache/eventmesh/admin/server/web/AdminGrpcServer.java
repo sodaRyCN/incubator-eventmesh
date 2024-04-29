@@ -23,7 +23,6 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
 
     private Payload process(Payload value) {
         if (value == null || StringUtils.isBlank(value.getMetadata().getType())) {
-
             return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN, "bad request"));
         }
         BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> handler =

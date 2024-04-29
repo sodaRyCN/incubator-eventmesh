@@ -4,5 +4,5 @@ import lombok.Data;
 
 @Data
 public class FetchJobRequest extends BaseGrpcRequest {
-    String primaryKey;
+    String jobID;
 }

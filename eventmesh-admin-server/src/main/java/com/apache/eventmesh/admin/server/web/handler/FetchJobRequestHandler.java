@@ -9,6 +9,9 @@ public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, 
     @Override
     public FetchJobResponse handler(FetchJobRequest request, Metadata metadata) {
         FetchJobResponse response = new FetchJobResponse();
+        response.setId(123);
+        response.setName("demo");
+        response.setSuccess(true);
         return response;
     }
 }
