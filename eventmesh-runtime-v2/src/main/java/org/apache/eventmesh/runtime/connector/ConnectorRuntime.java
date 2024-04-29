@@ -10,7 +10,7 @@ import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.config.ConfigService;
 import org.apache.eventmesh.common.config.connector.SinkConfig;
 import org.apache.eventmesh.common.config.connector.SourceConfig;
-import org.apache.eventmesh.common.config.offset.OffsetStorageConfig;
+import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;

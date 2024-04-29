@@ -17,7 +17,6 @@
 
 package org.apache.eventmesh.connector.jdbc.dialect;
 
-import org.apache.eventmesh.connector.jdbc.config.JdbcConfig;
 import org.apache.eventmesh.connector.jdbc.connection.JdbcConnection;
 import org.apache.eventmesh.connector.jdbc.exception.JdbcConnectionException;
 import org.apache.eventmesh.connector.jdbc.table.catalog.Column;

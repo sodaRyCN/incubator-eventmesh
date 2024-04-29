@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
-import org.apache.eventmesh.common.config.offset.OffsetStorageConfig;
+import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 
 import java.util.List;

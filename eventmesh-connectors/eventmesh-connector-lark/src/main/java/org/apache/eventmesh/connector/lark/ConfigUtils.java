@@ -17,7 +17,7 @@
 
 package org.apache.eventmesh.connector.lark;
 
-import org.apache.eventmesh.common.config.lark.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.lark.SinkConnectorConfig;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -17,8 +17,7 @@
 
 package org.apache.eventmesh.common.config.connector;
 
-import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.offset.OffsetStorageConfig;
+import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.http.source.connector;
 
-import org.apache.eventmesh.common.config.http.HttpSourceConfig;
-import org.apache.eventmesh.common.config.http.SourceConnectorConfig;
+import org.apache.eventmesh.common.config.connector.http.HttpSourceConfig;
+import org.apache.eventmesh.common.config.connector.http.SourceConnectorConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
 
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;

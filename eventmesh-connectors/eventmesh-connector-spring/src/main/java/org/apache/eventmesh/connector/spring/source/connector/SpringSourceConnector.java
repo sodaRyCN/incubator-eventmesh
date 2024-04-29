@@ -17,11 +17,11 @@
 
 package org.apache.eventmesh.connector.spring.source.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.spring.SpringSourceConfig;
 import org.apache.eventmesh.connector.spring.source.MessageSendingOperations;
-import org.apache.eventmesh.connector.spring.source.config.SpringSourceConfig;
 import org.apache.eventmesh.openconnect.SourceWorker;
 import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

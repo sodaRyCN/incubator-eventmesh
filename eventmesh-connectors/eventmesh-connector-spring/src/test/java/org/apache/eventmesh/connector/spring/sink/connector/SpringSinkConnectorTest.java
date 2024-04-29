@@ -19,7 +19,7 @@ package org.apache.eventmesh.connector.spring.sink.connector;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.apache.eventmesh.connector.spring.sink.config.SpringSinkConfig;
+import org.apache.eventmesh.common.config.connector.spring.SpringSinkConfig;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;

@@ -19,7 +19,7 @@ package org.apache.eventmesh.connector.lark.sink;
 
 import static org.apache.eventmesh.connector.lark.sink.connector.LarkSinkConnector.getTenantAccessToken;
 
-import org.apache.eventmesh.common.config.lark.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.lark.SinkConnectorConfig;
 import org.apache.eventmesh.connector.lark.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.connector.lark.config.LarkMessageTemplateType;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;

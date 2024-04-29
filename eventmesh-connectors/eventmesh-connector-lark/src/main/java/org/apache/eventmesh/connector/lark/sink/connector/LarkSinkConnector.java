@@ -20,15 +20,14 @@ package org.apache.eventmesh.connector.lark.sink.connector;
 import static org.apache.eventmesh.connector.lark.sink.ImServiceHandler.create;
 
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.lark.LarkSinkConfig;
-import org.apache.eventmesh.common.config.lark.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.lark.LarkSinkConfig;
+import org.apache.eventmesh.common.config.connector.lark.SinkConnectorConfig;
 import org.apache.eventmesh.connector.lark.ConfigUtils;
 import org.apache.eventmesh.connector.lark.sink.ImServiceHandler;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;

@@ -2,7 +2,8 @@ package org.apache.eventmesh.common.remote;
 
 public enum JobState {
     INIT,
-    STARaTED,
+    STARTED,
+    RUNNING,
     PAUSE,
     COMPLETE,
     DELETE,

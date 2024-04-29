@@ -17,10 +17,10 @@
 
 package org.apache.eventmesh.connector.prometheus.source.connector;
 
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.prometheus.PrometheusSourceConfig;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusReq;
 import org.apache.eventmesh.connector.prometheus.model.QueryPrometheusRsp;
-import org.apache.eventmesh.connector.prometheus.source.config.PrometheusSourceConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

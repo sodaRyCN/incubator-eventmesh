@@ -1,5 +1,13 @@
 package org.apache.eventmesh.common.remote;
 
-public class Position {
+import java.util.List;
+import java.util.Map;
+
+import lombok.Data;
+
+@Data
+public class Position<T extends Map> {
+
+    List<T> recordPositionList;
 
 }

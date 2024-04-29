@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.file.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.file.FileSourceConfig;
+import org.apache.eventmesh.common.config.connector.file.FileSourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

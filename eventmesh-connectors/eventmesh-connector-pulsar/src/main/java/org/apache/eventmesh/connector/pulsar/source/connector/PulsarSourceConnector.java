@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.connector.pulsar.source.connector;
 
-import org.apache.eventmesh.connector.pulsar.source.config.PulsarSourceConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.mq.pulsar.PulsarSourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.connector.s3.source.connector;
 
-import org.apache.eventmesh.connector.s3.source.config.S3SourceConfig;
-import org.apache.eventmesh.connector.s3.source.config.SourceConnectorConfig;
-import org.apache.eventmesh.openconnect.api.config.Config;
+import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.s3.S3SourceConfig;
+import org.apache.eventmesh.common.config.connector.s3.SourceConnectorConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

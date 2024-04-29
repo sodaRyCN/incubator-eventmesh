@@ -18,7 +18,7 @@
 package org.apache.eventmesh.connector.kafka.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
-import org.apache.eventmesh.common.config.mq.kafka.KafkaSourceConfig;
+import org.apache.eventmesh.common.config.connector.mq.kafka.KafkaSourceConfig;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;

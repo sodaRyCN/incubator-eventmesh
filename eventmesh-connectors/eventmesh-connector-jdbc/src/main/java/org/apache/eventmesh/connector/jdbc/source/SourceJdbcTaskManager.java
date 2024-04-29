@@ -17,9 +17,9 @@
 
 package org.apache.eventmesh.connector.jdbc.source;
 
+import org.apache.eventmesh.common.config.connector.rdb.jdbc.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.JdbcConnectData;
 import org.apache.eventmesh.connector.jdbc.event.Event;
-import org.apache.eventmesh.connector.jdbc.source.config.JdbcSourceConfig;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.RandomTaskSelectStrategy;
 import org.apache.eventmesh.connector.jdbc.source.dialect.cdc.TaskSelectStrategy;
 import org.apache.eventmesh.connector.jdbc.table.catalog.TableId;

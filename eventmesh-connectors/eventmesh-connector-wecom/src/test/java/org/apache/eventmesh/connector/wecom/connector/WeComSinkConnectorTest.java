@@ -21,10 +21,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.apache.eventmesh.common.config.connector.wecom.WeComSinkConfig;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.wecom.config.WeComMessageTemplateType;
 import org.apache.eventmesh.connector.wecom.constants.ConnectRecordExtensionKeys;
-import org.apache.eventmesh.connector.wecom.sink.config.WeComSinkConfig;
 import org.apache.eventmesh.connector.wecom.sink.connector.SendMessageResponse;
 import org.apache.eventmesh.connector.wecom.sink.connector.WeComSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
