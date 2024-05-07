@@ -14,7 +14,9 @@ dependencies {
 	implementation "io.grpc:grpc-netty-shaded"
 
 
-	implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter"
+	// https://mvnrepository.com/artifact/com.baomidou/mybatis-plus
+	implementation "com.baomidou:mybatis-plus"
+
 	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
 	implementation "com.alibaba:druid-spring-boot-starter"
 	runtimeOnly 'com.mysql:mysql-connector-j'

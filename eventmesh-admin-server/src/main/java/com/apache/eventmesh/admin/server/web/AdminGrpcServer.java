@@ -6,6 +6,7 @@ import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.payload.PayloadUtil;
 import org.apache.eventmesh.common.remote.request.BaseGrpcRequest;
 import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
@@ -23,16 +24,20 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
 
     private Payload process(Payload value) {
         if (value == null || StringUtils.isBlank(value.getMetadata().getType())) {
-
-            return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN, "bad request"));
+            return PayloadUtil.from(FailResponse.build(ErrorCode.BAD_REQUEST, "bad request: type not " +
+                    "exists"));
         }
-        BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> handler =
-                handlerFactory.getHandler(value.getMetadata().getType());
-        if (handler == null) {
-            return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN,
-                    "not match any request handler"));
+        try {
+            BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> handler =
+                    handlerFactory.getHandler(value.getMetadata().getType());
+            if (handler == null) {
+                return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN,
+                        "not match any request handler"));
+            }
+            return PayloadUtil.from(handler.handlerRequest(PayloadUtil.parse(value), value.getMetadata()));
+        } catch (Exception e) {
+            return null;
         }
-        return PayloadUtil.from(handler.handlerRequest(PayloadUtil.parse(value), value.getMetadata()));
     }
 
     public StreamObserver<Payload> invokeBiStream(StreamObserver<Payload> responseObserver) {

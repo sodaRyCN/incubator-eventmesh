@@ -1,15 +1,16 @@
 package org.apache.eventmesh.common.remote.response;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.Position;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.job.JobTransportType;
 
 import java.util.Map;
 
-import lombok.Data;
-import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
-
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class FetchJobResponse extends BaseGrpcResponse {
 
     private long id;
@@ -29,5 +30,20 @@ public class FetchJobResponse extends BaseGrpcResponse {
     private Position position;
 
     private JobState state;
+
+    public static FetchJobResponse successResponse() {
+        FetchJobResponse response = new FetchJobResponse();
+        response.setSuccess(true);
+        response.setErrorCode(ErrorCode.SUCCESS);
+        return response;
+    }
+
+    public static FetchJobResponse failResponse(int code, String desc) {
+        FetchJobResponse response = new FetchJobResponse();
+        response.setSuccess(false);
+        response.setErrorCode(code);
+        response.setDesc(desc);
+        return response;
+    }
 
 }

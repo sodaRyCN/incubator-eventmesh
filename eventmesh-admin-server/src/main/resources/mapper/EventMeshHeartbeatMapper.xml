@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="generator.mapper.EventMeshHeartbeatMapper">
+
+    <resultMap id="BaseResultMap" type="generator.entity.EventMeshHeartbeat">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="adminAddr" column="adminAddr" jdbcType="VARCHAR"/>
+            <result property="runtimeAddr" column="runtimeAddr" jdbcType="VARCHAR"/>
+            <result property="jobID" column="jobID" jdbcType="INTEGER"/>
+            <result property="positionID" column="positionID" jdbcType="INTEGER"/>
+            <result property="reportTime" column="reportTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,adminAddr,runtimeAddr,
+        jobID,positionID,reportTime,
+        updateTime
+    </sql>
+</mapper>
