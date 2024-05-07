@@ -25,7 +25,7 @@ public class PayloadUtil {
     public static BaseGrpcRequest parse(Payload payload) {
         Class<?> targetClass = PayloadFactory.getInstance().getClassByType(payload.getMetadata().getType());
         if (targetClass == null) {
-            throw new PayloadFormatException(ErrorCode.TYPE_IN_METADATA_NOT_EXISTS,
+            throw new PayloadFormatException(ErrorCode.BAD_REQUEST,
                     "Unknown payload type:" + payload.getMetadata().getType());
         }
         return (BaseGrpcRequest)JsonUtils.parseObject(new ByteBufferBackedInputStream(payload.getBody().getValue().asReadOnlyByteBuffer()), targetClass);

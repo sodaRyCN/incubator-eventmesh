@@ -7,5 +7,14 @@ public enum JobState {
     PAUSE,
     COMPLETE,
     DELETE,
-    FAIL
+    FAIL;
+    private static final JobState[] STATES = JobState.values();
+
+    public static JobState fromIndex(int index) {
+        if (index < 0 || index >= STATES.length) {
+            return null;
+        }
+
+        return STATES[index];
+    }
 }

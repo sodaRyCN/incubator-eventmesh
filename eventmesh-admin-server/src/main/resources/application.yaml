@@ -4,5 +4,8 @@ spring:
     username: sodafang
     password: asdfasdf
     driver-class-name: com.mysql.cj.jdbc.Driver
-mybatis:
+mybatis-plugins:
   mapper-locations: classpath:mapper/*.xml
+event-mesh:
+  admin-server:
+    port: 8081

@@ -1,11 +1,12 @@
 package com.apache.eventmesh.admin.server;
 
-public class AdminException extends RuntimeException {
-    public AdminException(String message) {
-        super(message);
-    }
+import lombok.Getter;
 
-    public AdminException(String message, Throwable cause) {
-        super(message, cause);
+public class AdminException extends RuntimeException {
+    @Getter
+    private final int code;
+    public AdminException(int code, String message) {
+        super(message);
+        this.code = code;
     }
 }
