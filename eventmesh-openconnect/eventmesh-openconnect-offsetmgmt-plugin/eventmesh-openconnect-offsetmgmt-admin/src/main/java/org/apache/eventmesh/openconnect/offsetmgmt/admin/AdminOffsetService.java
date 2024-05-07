@@ -111,8 +111,9 @@ public class AdminOffsetService implements OffsetManagementService {
         ReportPositionRequest reportPositionRequest = new ReportPositionRequest();
         reportPositionRequest.setJobID(jobId);
         reportPositionRequest.setState(jobState);
-        Position<Map<String, Object>> position = new Position<>();
-        position.setRecordPositionList(recordToSyncList);
+
+        Position position = new Position();
+//        position.setRecordPositionList(recordToSyncList);
         reportPositionRequest.setPosition(position);
 
         Metadata metadata = Metadata.newBuilder()

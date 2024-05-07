@@ -15,46 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
+
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class RecordPartition {
+public class RocketMQRecordOffset extends RecordOffset {
 
-    private Map<String, ?> partitionMap = new HashMap<>();
+    /**
+     * if pull message from mq
+     * key=queueOffset,
+     * value=queueOffset value
+     */
 
-    public RecordPartition() {
+    public RocketMQRecordOffset() {
 
     }
 
-    public RecordPartition(Map<String, ?> partition) {
-        this.partitionMap = partition;
+    public RocketMQRecordOffset(Map<String, ?> offset) {
+        super(offset);
     }
 
-    public Map<String, ?> getPartitionMap() {
-        return partitionMap;
-    }
-
-    public Class<? extends RecordPartition> getRecordPartitionClass() {
-        return null;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        RecordPartition that = (RecordPartition) o;
-        return Objects.equals(partitionMap, that.partitionMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(partitionMap);
-    }
 }

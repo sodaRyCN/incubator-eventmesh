@@ -26,6 +26,8 @@ import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import org.apache.rocketmq.client.consumer.AllocateMessageQueueStrategy;
@@ -146,7 +148,7 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
                     partitionMap.put("topic", messageQueue.getTopic());
                     partitionMap.put("brokerName", messageQueue.getBrokerName());
                     partitionMap.put("queueId", messageQueue.getQueueId() + "");
-                    RecordPartition recordPartition = new RecordPartition(partitionMap);
+                    RecordPartition recordPartition = new RocketMQRecordPartition(partitionMap);
                     RecordOffset recordOffset = offsetStorageReader.readOffset(recordPartition);
                     log.info("assigned messageQueue {}, recordOffset {}", messageQueue, recordOffset);
                     if (recordOffset != null) {
@@ -187,7 +189,7 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
     @Override
     public void commit(ConnectRecord record) {
         // send success, commit offset
-        Map<String, ?> map = record.getPosition().getPartition().getPartition();
+        Map<String, ?> map = record.getPosition().getPartition().getPartitionMap();
         String brokerName = (String) map.get("brokerName");
         String topic = (String) map.get("topic");
         int queueId = Integer.parseInt((String) map.get("queueId"));
@@ -235,7 +237,7 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
     public static RecordOffset convertToRecordOffset(Long offset) {
         Map<String, String> offsetMap = new HashMap<>();
         offsetMap.put("queueOffset", offset + "");
-        return new RecordOffset(offsetMap);
+        return new RocketMQRecordOffset(offsetMap);
     }
 
     public static RecordPartition convertToRecordPartition(String topic, String brokerName, int queueId) {
@@ -243,7 +245,7 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
         map.put("topic", topic);
         map.put("brokerName", brokerName);
         map.put("queueId", queueId + "");
-        return new RecordPartition(map);
+        return new RocketMQRecordPartition(map);
     }
 
     private void putPulledQueueOffset(MessageExt messageExt) {

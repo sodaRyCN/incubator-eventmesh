@@ -15,19 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
 
 import org.apache.eventmesh.common.remote.Position;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 
 import java.util.Objects;
 
-public class RecordPosition extends Position {
+public class RocketMQRecordPosition extends Position {
 
     private final RecordPartition recordPartition;
 
     private final RecordOffset recordOffset;
 
-    public RecordPosition(
+    public RocketMQRecordPosition(
         RecordPartition recordPartition, RecordOffset recordOffset) {
         this.recordPartition = recordPartition;
         this.recordOffset = recordOffset;
@@ -46,10 +48,10 @@ public class RecordPosition extends Position {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof RecordPosition)) {
+        if (!(o instanceof RocketMQRecordPosition)) {
             return false;
         }
-        RecordPosition position = (RecordPosition) o;
+        RocketMQRecordPosition position = (RocketMQRecordPosition) o;
         return recordPartition.equals(position.recordPartition) && recordOffset.equals(position.recordOffset);
     }
 

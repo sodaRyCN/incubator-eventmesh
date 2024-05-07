@@ -15,46 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
+
+import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class RecordPartition {
+public class RocketMQRecordPartition extends ConnectorRecordPartition {
 
-    private Map<String, ?> partitionMap = new HashMap<>();
+    /**
+     *  key=topic,value=topicName
+     *  key=brokerName,value=brokerName
+     *  key=queueId,value=queueId
+     */
 
-    public RecordPartition() {
+
+    public RocketMQRecordPartition() {
 
     }
 
-    public RecordPartition(Map<String, ?> partition) {
-        this.partitionMap = partition;
-    }
-
-    public Map<String, ?> getPartitionMap() {
-        return partitionMap;
+    public RocketMQRecordPartition(Map<String, ?> partition) {
+        super(partition);
     }
 
     public Class<? extends RecordPartition> getRecordPartitionClass() {
-        return null;
+        return RocketMQRecordPartition.class;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        RecordPartition that = (RecordPartition) o;
-        return Objects.equals(partitionMap, that.partitionMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(partitionMap);
-    }
 }

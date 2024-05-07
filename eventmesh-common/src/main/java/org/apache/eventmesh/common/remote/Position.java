@@ -6,8 +6,6 @@ import java.util.Map;
 import lombok.Data;
 
 @Data
-public class Position<T extends Map> {
-
-    List<T> recordPositionList;
+public class Position {
 
 }

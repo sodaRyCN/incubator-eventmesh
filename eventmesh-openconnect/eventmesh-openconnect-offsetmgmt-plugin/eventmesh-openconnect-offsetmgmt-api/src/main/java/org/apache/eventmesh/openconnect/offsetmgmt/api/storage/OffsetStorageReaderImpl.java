@@ -37,7 +37,7 @@ public class OffsetStorageReaderImpl implements OffsetStorageReader {
 
     @Override
     public RecordOffset readOffset(RecordPartition partition) {
-        ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, partition.getPartition());
+        ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, partition.getPartitionMap());
         return offsetManagementService.getPositionMap().get(connectorRecordPartition);
     }
 
@@ -46,7 +46,7 @@ public class OffsetStorageReaderImpl implements OffsetStorageReader {
         Map<RecordPartition, RecordOffset> result = new HashMap<>();
         Map<ConnectorRecordPartition, RecordOffset> allData = offsetManagementService.getPositionMap();
         for (RecordPartition key : partitions) {
-            ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, key.getPartition());
+            ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, key.getPartitionMap());
             if (allData.containsKey(connectorRecordPartition)) {
                 result.put(key, allData.get(connectorRecordPartition));
             }

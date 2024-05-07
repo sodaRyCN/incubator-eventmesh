@@ -18,6 +18,7 @@
 package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordPartition;
 
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +37,10 @@ public class ConnectorRecordPartition extends RecordPartition {
 
     }
 
+    public ConnectorRecordPartition(Map<String, ?> partition) {
+        super(partition);
+    }
+
     public ConnectorRecordPartition(String connectorName, Map<String, ?> partition) {
         super(partition);
         this.connectorName = connectorName;
@@ -43,6 +48,10 @@ public class ConnectorRecordPartition extends RecordPartition {
 
     public String getConnectorName() {
         return connectorName;
+    }
+
+    public Class<? extends RecordPartition> getRecordPartitionClass() {
+        return ConnectorRecordPartition.class;
     }
 
     @Override

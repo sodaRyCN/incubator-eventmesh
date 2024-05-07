@@ -12,7 +12,7 @@ public class ReportPositionRequest {
 
     private String jobID;
 
-    private Position<Map<String, Object>> position;
+    private Position position;
 
     private JobState state;
 
