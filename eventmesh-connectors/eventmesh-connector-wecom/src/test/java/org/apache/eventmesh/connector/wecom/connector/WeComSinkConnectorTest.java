@@ -22,14 +22,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.apache.eventmesh.common.config.connector.wecom.WeComSinkConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.wecom.config.WeComMessageTemplateType;
 import org.apache.eventmesh.connector.wecom.constants.ConnectRecordExtensionKeys;
 import org.apache.eventmesh.connector.wecom.sink.connector.SendMessageResponse;
 import org.apache.eventmesh.connector.wecom.sink.connector.WeComSinkConnector;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.util.ConfigUtil;
 
 import org.apache.http.HttpEntity;
