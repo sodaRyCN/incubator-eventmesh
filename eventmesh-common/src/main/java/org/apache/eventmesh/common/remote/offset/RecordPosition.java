@@ -15,30 +15,33 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
+package org.apache.eventmesh.common.remote.offset;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
-public class RecordPartition {
+public class RecordPosition {
 
-    private Map<String, ?> partitionMap = new HashMap<>();
+    private final RecordPartition recordPartition;
 
-    public RecordPartition() {
+    private Class<? extends RecordPartition> recordPartitionClazz;
 
+    private final RecordOffset recordOffset;
+
+    private Class<? extends RecordOffset> recordOffsetClazz;
+
+    public RecordPosition(
+        RecordPartition recordPartition, RecordOffset recordOffset) {
+        this.recordPartition = recordPartition;
+        this.recordOffset = recordOffset;
+        this.recordPartitionClazz = recordPartition.getRecordPartitionClass();
     }
 
-    public RecordPartition(Map<String, ?> partition) {
-        this.partitionMap = partition;
+    public RecordPartition getPartition() {
+        return recordPartition;
     }
 
-    public Map<String, ?> getPartitionMap() {
-        return partitionMap;
-    }
-
-    public Class<? extends RecordPartition> getRecordPartitionClass() {
-        return null;
+    public RecordOffset getOffset() {
+        return recordOffset;
     }
 
     @Override
@@ -46,15 +49,15 @@ public class RecordPartition {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof RecordPosition)) {
             return false;
         }
-        RecordPartition that = (RecordPartition) o;
-        return Objects.equals(partitionMap, that.partitionMap);
+        RecordPosition position = (RecordPosition) o;
+        return recordPartition.equals(position.recordPartition) && recordOffset.equals(position.recordOffset);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(partitionMap);
+        return Objects.hash(recordPartition, recordOffset);
     }
 }

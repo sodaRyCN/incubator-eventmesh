@@ -17,8 +17,8 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class OffsetStorageWriterImpl implements OffsetStorageWriter, Closeable {
 
     private final String connectorName;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private OffsetManagementService offsetManagementService;
+    private final OffsetManagementService offsetManagementService;
     /**
      * Offset data in Connect format
      */

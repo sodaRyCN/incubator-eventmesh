@@ -15,32 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
+package org.apache.eventmesh.common.remote.offset;
 
-import org.apache.eventmesh.common.remote.Position;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
-public class RocketMQRecordPosition extends Position {
+public class RecordPartition {
 
-    private final RecordPartition recordPartition;
+    private Map<String, ?> partitionMap = new HashMap<>();
 
-    private final RecordOffset recordOffset;
+    public RecordPartition() {
 
-    public RocketMQRecordPosition(
-        RecordPartition recordPartition, RecordOffset recordOffset) {
-        this.recordPartition = recordPartition;
-        this.recordOffset = recordOffset;
     }
 
-    public RecordPartition getPartition() {
-        return recordPartition;
+    public RecordPartition(Map<String, ?> partition) {
+        this.partitionMap = partition;
     }
 
-    public RecordOffset getOffset() {
-        return recordOffset;
+    public Map<String, ?> getPartitionMap() {
+        return partitionMap;
+    }
+
+    public Class<? extends RecordPartition> getRecordPartitionClass() {
+        return RecordPartition.class;
     }
 
     @Override
@@ -48,15 +46,22 @@ public class RocketMQRecordPosition extends Position {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof RocketMQRecordPosition)) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        RocketMQRecordPosition position = (RocketMQRecordPosition) o;
-        return recordPartition.equals(position.recordPartition) && recordOffset.equals(position.recordOffset);
+        RecordPartition that = (RecordPartition) o;
+        return Objects.equals(partitionMap, that.partitionMap);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(recordPartition, recordOffset);
+        return Objects.hash(partitionMap);
+    }
+
+    @Override
+    public String toString() {
+        return "RecordPartition{" +
+            "partitionMap=" + partitionMap +
+            '}';
     }
 }

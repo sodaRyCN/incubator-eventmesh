@@ -17,8 +17,7 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordPartition;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.util.Map;
 import java.util.Objects;
@@ -72,5 +71,12 @@ public class ConnectorRecordPartition extends RecordPartition {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), connectorName);
+    }
+
+    @Override
+    public String toString() {
+        return "ConnectorRecordPartition{" +
+            "connectorName='" + connectorName + '\'' +
+            '}';
     }
 }

@@ -18,7 +18,7 @@
 package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
 import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
@@ -49,12 +49,12 @@ public interface OffsetManagementService {
     }
 
     /**
-     * Persist position info in a persist store.
+     * Persist position info in a persisted store.
      */
     void persist();
 
     /**
-     * load position info in a persist store.
+     * load position info in a persisted store.
      */
     void load();
 

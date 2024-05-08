@@ -17,8 +17,7 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
 
-import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 
 import java.util.HashMap;

@@ -19,6 +19,7 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
+import org.apache.eventmesh.openconnect.api.callback.SendMessageCallback;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.factory.ConnectorPluginFactory;
@@ -35,15 +36,19 @@ import org.apache.eventmesh.runtime.Runtime;
 import org.apache.eventmesh.runtime.RuntimeInstanceConfig;
 import org.apache.eventmesh.spi.EventMeshExtensionFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -100,6 +105,8 @@ public class ConnectorRuntime implements Runtime {
     private final BlockingQueue<ConnectRecord> queue;
 
     private volatile boolean isRunning = false;
+
+    public static final String CALLBACK_EXTENSION = "callBackExtension";
 
 
     public ConnectorRuntime(RuntimeInstanceConfig runtimeInstanceConfig) {
@@ -209,7 +216,7 @@ public class ConnectorRuntime implements Runtime {
     private FetchJobResponse fetchJobConfig() {
         String jobId = connectorRuntimeConfig.getJobID();
         FetchJobRequest jobRequest = new FetchJobRequest();
-        jobRequest.setPrimaryKey(jobId);
+        jobRequest.setJobID(jobId);
 
         Metadata metadata = Metadata.newBuilder()
             .setType(FetchJobRequest.class.getSimpleName())
@@ -253,7 +260,7 @@ public class ConnectorRuntime implements Runtime {
 
         // start offsetMgmtService
         offsetManagementService.start();
-        isRunning = true;
+        // start sinkService
         sinkService.execute(
             () -> {
                 try {
@@ -267,7 +274,7 @@ public class ConnectorRuntime implements Runtime {
                     }
                 }
             });
-
+        // start
         sourceService.execute(
             () -> {
                 try {
@@ -281,8 +288,7 @@ public class ConnectorRuntime implements Runtime {
                     }
                 }
             });
-
-
+        isRunning = true;
     }
 
     @Override
@@ -298,19 +304,117 @@ public class ConnectorRuntime implements Runtime {
         sourceConnector.start();
         while (isRunning) {
             List<ConnectRecord> connectorRecordList = sourceConnector.poll();
+            // TODO: use producer pub record to storage replace below
             if (connectorRecordList != null && !connectorRecordList.isEmpty()) {
-//                for (ConnectRecord record : connectorRecordList) {
-//                    queue.put(record);
-//                }
-                // TODO: producer pub to storage
+                for (ConnectRecord record : connectorRecordList) {
+                    queue.put(record);
+                    Optional<RecordOffsetManagement.SubmittedPosition> submittedRecordPosition = prepareToUpdateRecordOffset(record);
+                    Optional<SendMessageCallback> callback = Optional.ofNullable(record.getExtensionObj(CALLBACK_EXTENSION))
+                        .map(v -> (SendMessageCallback) v);
+                    // commit record
+                    this.sourceConnector.commit(record);
+                    submittedRecordPosition.ifPresent(RecordOffsetManagement.SubmittedPosition::ack);
+                    // TODO:finish the optional callback
+//                    callback.ifPresent(cb -> cb.onSuccess(record));
+                    offsetManagement.awaitAllMessages(5000, TimeUnit.MILLISECONDS);
+                    // update & commit offset
+                    updateCommittableOffsets();
+                    commitOffsets();
+                }
             }
         }
+    }
+
+    public Optional<RecordOffsetManagement.SubmittedPosition> prepareToUpdateRecordOffset(ConnectRecord record) {
+        return Optional.of(this.offsetManagement.submitRecord(record.getPosition()));
+    }
+
+    public void updateCommittableOffsets() {
+        RecordOffsetManagement.CommittableOffsets newOffsets = offsetManagement.committableOffsets();
+        synchronized (this) {
+            this.committableOffsets = this.committableOffsets.updatedWith(newOffsets);
+        }
+    }
+
+    public boolean commitOffsets() {
+        log.info("Start Committing offsets");
+
+        long timeout = System.currentTimeMillis() + 5000L;
+
+        RecordOffsetManagement.CommittableOffsets offsetsToCommit;
+        synchronized (this) {
+            offsetsToCommit = this.committableOffsets;
+            this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
+        }
+
+        if (committableOffsets.isEmpty()) {
+            log.debug("Either no records were produced since the last offset commit, "
+                + "or every record has been filtered out by a transformation "
+                + "or dropped due to transformation or conversion errors.");
+            // We continue with the offset commit process here instead of simply returning immediately
+            // in order to invoke SourceTask::commit and record metrics for a successful offset commit
+        } else {
+            log.info("{} Committing offsets for {} acknowledged messages", this, committableOffsets.numCommittableMessages());
+            if (committableOffsets.hasPending()) {
+                log.debug("{} There are currently {} pending messages spread across {} source partitions whose offsets will not be committed. "
+                        + "The source partition with the most pending messages is {}, with {} pending messages",
+                    this,
+                    committableOffsets.numUncommittableMessages(),
+                    committableOffsets.numDeques(),
+                    committableOffsets.largestDequePartition(),
+                    committableOffsets.largestDequeSize());
+            } else {
+                log.debug("{} There are currently no pending messages for this offset commit; "
+                        + "all messages dispatched to the task's producer since the last commit have been acknowledged",
+                    this);
+            }
+        }
+
+        // write offset to memory
+        offsetsToCommit.offsets().forEach(offsetStorageWriter::writeOffset);
+
+        // begin flush
+        if (!offsetStorageWriter.beginFlush()) {
+            return true;
+        }
+
+        // using offsetManagementService to persist offset
+        Future<Void> flushFuture = offsetStorageWriter.doFlush();
+        try {
+            flushFuture.get(Math.max(timeout - System.currentTimeMillis(), 0), TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            log.warn("{} Flush of offsets interrupted, cancelling", this);
+            offsetStorageWriter.cancelFlush();
+            return false;
+        } catch (ExecutionException e) {
+            log.error("{} Flush of offsets threw an unexpected exception: ", this, e);
+            offsetStorageWriter.cancelFlush();
+            return false;
+        } catch (TimeoutException e) {
+            log.error("{} Timed out waiting to flush offsets to storage; will try again on next flush interval with latest offsets", this);
+            offsetStorageWriter.cancelFlush();
+            return false;
+        }
+        return true;
     }
 
     private void startSinkConnector() throws Exception {
         sinkConnector.start();
         while (isRunning) {
-            // TODO: consumer sub from storage
+            // TODO: use consumer sub from storage to replace below
+            ConnectRecord connectRecord = null;
+            try {
+                connectRecord = queue.poll(5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.error("poll connect record error", e);
+            }
+            if (connectRecord == null) {
+                continue;
+            }
+            List<ConnectRecord> connectRecordList = new ArrayList<>();
+            connectRecordList.add(connectRecord);
+            sinkConnector.put(connectRecordList);
         }
     }
 }

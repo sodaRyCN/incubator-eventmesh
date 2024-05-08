@@ -18,7 +18,7 @@
 package org.apache.eventmesh.openconnect.offsetmgmt.nacos;
 
 import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.KeyValueStore;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.MemoryBasedKeyValueStore;
@@ -69,7 +69,7 @@ public class NacosConfigService implements OffsetManagementService {
 
     // merge the updated connectorRecord & recordOffset to memory store
     public void mergeOffset(ConnectorRecordPartition connectorRecordPartition, RecordOffset recordOffset) {
-        if (connectorRecordPartition == null || connectorRecordPartition.getPartition().isEmpty()) {
+        if (connectorRecordPartition == null || connectorRecordPartition.getPartitionMap().isEmpty()) {
             return;
         }
         if (positionStore.getKVMap().containsKey(connectorRecordPartition)) {

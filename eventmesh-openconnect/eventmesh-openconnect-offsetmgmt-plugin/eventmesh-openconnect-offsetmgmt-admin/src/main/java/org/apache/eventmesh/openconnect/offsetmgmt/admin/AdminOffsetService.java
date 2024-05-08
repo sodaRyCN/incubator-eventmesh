@@ -25,9 +25,10 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.Position;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.KeyValueStore;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.MemoryBasedKeyValueStore;
@@ -88,33 +89,19 @@ public class AdminOffsetService implements OffsetManagementService {
 
     @Override
     public void persist() {
-
-    }
-
-    @Override
-    public void load() {
-
-    }
-
-    @Override
-    public void synchronize() {
         Map<ConnectorRecordPartition, RecordOffset> recordMap = positionStore.getKVMap();
 
-        List<Map<String, Object>> recordToSyncList = new ArrayList<>();
+        List<RecordPosition> recordToSyncList = new ArrayList<>();
         for (Map.Entry<ConnectorRecordPartition, RecordOffset> entry : recordMap.entrySet()) {
-            Map<String, Object> synchronizeMap = new HashMap<>();
-            synchronizeMap.put("connectorRecordPartition", entry.getKey());
-            synchronizeMap.put("recordOffset", entry.getValue());
-            recordToSyncList.add(synchronizeMap);
+            RecordPosition recordPosition = new RecordPosition(entry.getKey(), entry.getValue());
+            recordToSyncList.add(recordPosition);
         }
 
         ReportPositionRequest reportPositionRequest = new ReportPositionRequest();
         reportPositionRequest.setJobID(jobId);
         reportPositionRequest.setState(jobState);
 
-        Position position = new Position();
-//        position.setRecordPositionList(recordToSyncList);
-        reportPositionRequest.setPosition(position);
+        reportPositionRequest.setRecordPositionList(recordToSyncList);
 
         Metadata metadata = Metadata.newBuilder()
             .setType(ReportPositionRequest.class.getSimpleName())
@@ -125,6 +112,16 @@ public class AdminOffsetService implements OffsetManagementService {
                 unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(reportPositionRequest)))).build())
             .build();
         requestObserver.onNext(payload);
+    }
+
+    @Override
+    public void load() {
+
+    }
+
+    @Override
+    public void synchronize() {
+
     }
 
     @Override

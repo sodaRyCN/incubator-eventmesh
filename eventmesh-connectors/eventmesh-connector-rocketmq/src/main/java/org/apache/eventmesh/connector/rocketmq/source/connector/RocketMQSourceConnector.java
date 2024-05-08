@@ -19,13 +19,13 @@ package org.apache.eventmesh.connector.rocketmq.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.mq.rocketmq.RocketMQSourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordOffset;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
@@ -80,7 +80,7 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
 
     private final ConcurrentHashMap<MessageQueue, List<AtomicLong>> prepareCommitOffset = new ConcurrentHashMap<>();
 
-    private ConcurrentHashMap<MessageQueue, TreeMap<Long/* offset */, MessageExt/* can commit */>> queue2Offsets = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<MessageQueue, TreeMap<Long/* offset */, MessageExt/* can commit */>> queue2Offsets = new ConcurrentHashMap<>();
 
     private final AtomicInteger unAckCounter = new AtomicInteger();
 

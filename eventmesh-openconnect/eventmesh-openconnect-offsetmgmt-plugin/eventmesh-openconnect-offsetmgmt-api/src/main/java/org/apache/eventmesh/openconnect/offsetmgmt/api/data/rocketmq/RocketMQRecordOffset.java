@@ -17,11 +17,9 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
 
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class RocketMQRecordOffset extends RecordOffset {
 
@@ -39,4 +37,8 @@ public class RocketMQRecordOffset extends RecordOffset {
         super(offset);
     }
 
+    @Override
+    public Class<? extends RecordOffset> getRecordOffsetClass() {
+        return RocketMQRecordOffset.class;
+    }
 }
