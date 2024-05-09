@@ -2,14 +2,12 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.apache.eventmesh.admin.server.web.db.mapper.EventMeshDataSourceMapper">
+<mapper namespace="com.apache.eventmesh.admin.server.web.db.mapper.EventMeshDataSourceTypeMapper">
 
-    <resultMap id="BaseResultMap" type="com.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource">
+    <resultMap id="BaseResultMap" type="com.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSourceType">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="type" column="type" jdbcType="INTEGER"/>
-            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
             <result property="desc" column="desc" jdbcType="VARCHAR"/>
-            <result property="configuration" column="configuration" jdbcType="VARCHAR"/>
             <result property="createUid" column="createUid" jdbcType="INTEGER"/>
             <result property="updateUid" column="updateUid" jdbcType="INTEGER"/>
             <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
@@ -17,8 +15,8 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,type,address,
-        desc,configuration,createUid,
-        updateUid,createTime,updateTime
+        id,name,desc,
+        createUid,updateUid,createTime,
+        updateTime
     </sql>
 </mapper>

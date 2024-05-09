@@ -10,8 +10,8 @@ public enum JobState {
     FAIL;
     private static final JobState[] STATES = JobState.values();
 
-    public static JobState fromIndex(int index) {
-        if (index < 0 || index >= STATES.length) {
+    public static JobState fromIndex(Integer index) {
+        if (index == null || index < 0 || index >= STATES.length) {
             return null;
         }
 

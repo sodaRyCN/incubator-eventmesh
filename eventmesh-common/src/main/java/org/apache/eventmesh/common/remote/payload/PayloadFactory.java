@@ -1,7 +1,5 @@
 package org.apache.eventmesh.common.remote.payload;
 
-import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
-
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -31,8 +29,8 @@ public class PayloadFactory {
         if (initialized) {
             return;
         }
-        ServiceLoader<Payload> payloads = ServiceLoader.load(Payload.class);
-        for (Payload payload : payloads) {
+        ServiceLoader<IPayload> payloads = ServiceLoader.load(IPayload.class);
+        for (IPayload payload : payloads) {
             register(payload.getClass().getSimpleName(), payload.getClass());
         }
         initialized = true;

@@ -1,5 +1,6 @@
 package org.apache.eventmesh.common.remote.request;
 
+import lombok.Data;
 import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.Position;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
@@ -7,10 +8,8 @@ import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Data;
-
 @Data
-public class ReportPositionRequest {
+public class ReportPositionRequest extends BaseGrpcRequest {
 
     private String jobID;
 

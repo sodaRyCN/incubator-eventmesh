@@ -13,7 +13,7 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 public class FetchJobResponse extends BaseGrpcResponse {
 
-    private long id;
+    private Integer id;
 
     private String name;
 

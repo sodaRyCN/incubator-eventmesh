@@ -1,29 +1,24 @@
 package com.apache.eventmesh.admin.server.web.db.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-
 import java.io.Serializable;
 import java.util.Date;
+import lombok.Data;
 
 /**
- * @TableName event_mesh_data_source
+ * @TableName event_mesh_data_source_type
  */
-@TableName(value ="event_mesh_data_source")
+@TableName(value ="event_mesh_data_source_type")
 @Data
-public class EventMeshDataSource implements Serializable {
-    @TableId(type = IdType.AUTO)
+public class EventMeshDataSourceType implements Serializable {
     private Integer id;
 
-    private Integer type;
-
-    private String address;
+    private String name;
 
     private String desc;
-
-    private String configuration;
 
     private Integer createUid;
 

@@ -13,9 +13,9 @@ dependencies {
 	implementation "io.grpc:grpc-stub"
 	implementation "io.grpc:grpc-netty-shaded"
 
+	// https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter
+	implementation group: 'com.baomidou', name: 'mybatis-plus-boot-starter', version: '3.5.5'
 
-	// https://mvnrepository.com/artifact/com.baomidou/mybatis-plus
-	implementation "com.baomidou:mybatis-plus"
 
 	// https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter
 	implementation "com.alibaba:druid-spring-boot-starter"

@@ -1,5 +1,7 @@
 package com.apache.eventmesh.admin.server.web.db.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -12,6 +14,7 @@ import java.util.Date;
 @TableName(value ="event_mesh_heartbeat")
 @Data
 public class EventMeshHeartbeat implements Serializable {
+    @TableId(type = IdType.AUTO)
     private Integer id;
 
     private String adminAddr;

@@ -1,5 +1,6 @@
 package com.apache.eventmesh.admin.server.web;
 
+import com.apache.eventmesh.admin.server.AdminServerException;
 import com.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
 import com.apache.eventmesh.admin.server.web.handler.RequestHandlerFactory;
 import io.grpc.stub.ServerCallStreamObserver;
@@ -34,9 +35,14 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
                 return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN,
                         "not match any request handler"));
             }
-            return PayloadUtil.from(handler.handlerRequest(PayloadUtil.parse(value), value.getMetadata()));
+            return PayloadUtil.from(handler.handlerRequest((BaseGrpcRequest) PayloadUtil.parse(value), value.getMetadata()));
         } catch (Exception e) {
-            return null;
+            log.warn("process payload {} fail", value.getMetadata().getType(), e);
+            if (e instanceof AdminServerException) {
+                return PayloadUtil.from(FailResponse.build(((AdminServerException)e).getCode(),
+                        e.getMessage()));
+            }
+            return PayloadUtil.from(FailResponse.build(ErrorCode.INTERNAL_ERR, "admin server internal err"));
         }
     }
 
