@@ -31,4 +31,11 @@ import lombok.Data;
 public class SourceConnectorConfig {
 
     private String connectorName;
+
+    private String url;
+
+    private String userName;
+
+    private String passWord;
+
 }

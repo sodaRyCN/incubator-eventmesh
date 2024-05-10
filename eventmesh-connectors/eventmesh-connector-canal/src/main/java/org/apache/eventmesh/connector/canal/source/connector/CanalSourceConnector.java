@@ -19,6 +19,7 @@ package org.apache.eventmesh.connector.canal.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -28,12 +29,25 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 import java.util.List;
 
 
+import com.alibaba.otter.canal.instance.core.CanalInstance;
+import com.alibaba.otter.canal.instance.core.CanalInstanceGenerator;
+import com.alibaba.otter.canal.protocol.ClientIdentity;
+import com.alibaba.otter.canal.server.embedded.CanalServerWithEmbedded;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class CanalSourceConnector implements Source, ConnectorCreateService<Source> {
 
     private CanalSourceConfig sourceConfig;
+
+    private CanalServerWithEmbedded canalServer;
+
+    private ClientIdentity clientIdentity;
+
+    private String filter;
+
+    private volatile boolean running = false;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -44,18 +58,38 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     public void init(Config config) throws Exception {
         // init config for canal source connector
         this.sourceConfig = (CanalSourceConfig) config;
-
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
+        // init source database connection
+        DatabaseConnection.sourceConfig = sourceConfig;
+        DatabaseConnection.initSourceConnection();
+
+        canalServer = CanalServerWithEmbedded.instance();
+        canalServer.setCanalInstanceGenerator(new CanalInstanceGenerator() {
+            @Override
+            public CanalInstance generate(String destination) {
+                return null;
+            }
+        });
     }
 
 
     @Override
     public void start() throws Exception {
+        if (running) {
+            return;
+        }
+        canalServer.start();
+
+        canalServer.start(sourceConfig.getDestination());
+        this.clientIdentity = new ClientIdentity(sourceConfig.getDestination(), sourceConfig.getClientId(), filter);
+        canalServer.subscribe(clientIdentity);
+
+        running = true;
     }
 
 
@@ -66,7 +100,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
     @Override
     public String name() {
-        return this.sourceConfig.getSourceConnectorConfig().getName();
+        return this.sourceConfig.getSourceConnectorConfig().getConnectorName();
     }
 
     @Override

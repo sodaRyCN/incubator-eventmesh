@@ -34,6 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
+    private CanalSinkConfig sinkConfig;
+
     @Override
     public Class<? extends Config> configClass() {
         return CanalSinkConfig.class;
@@ -64,7 +66,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     @Override
     public String name() {
-        return "";
+        return this.sinkConfig.getSinkConnectorConfig().getConnectorName();
     }
 
     @Override

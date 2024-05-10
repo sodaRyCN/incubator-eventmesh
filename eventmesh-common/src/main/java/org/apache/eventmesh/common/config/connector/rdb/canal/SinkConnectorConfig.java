@@ -27,4 +27,11 @@ import lombok.Data;
 @Data
 public class SinkConnectorConfig {
 
+    private String connectorName;
+
+    private String url;
+
+    private String userName;
+
+    private String passWord;
 }
