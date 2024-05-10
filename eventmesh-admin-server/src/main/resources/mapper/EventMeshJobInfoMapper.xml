@@ -11,7 +11,7 @@
             <result property="sourceData" column="sourceData" jdbcType="INTEGER"/>
             <result property="targetData" column="targetData" jdbcType="INTEGER"/>
             <result property="state" column="state" jdbcType="TINYINT"/>
-            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="jobType" column="jobType" jdbcType="TINYINT"/>
             <result property="position" column="position" jdbcType="INTEGER"/>
             <result property="createUid" column="createUid" jdbcType="INTEGER"/>
             <result property="updateUid" column="updateUid" jdbcType="INTEGER"/>
@@ -22,7 +22,7 @@
     <sql id="Base_Column_List">
         jobID,name,transportType,
         sourceData,targetData,state,
-        type,position,createUid,
+        runtimeType,position,createUid,
         updateUid,createTime,updateTime
     </sql>
 </mapper>

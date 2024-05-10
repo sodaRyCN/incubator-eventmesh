@@ -19,7 +19,7 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.Ad
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceStub;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
-import org.apache.eventmesh.common.remote.HeartBeat;
+import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -236,13 +236,13 @@ public class ConnectorRuntime implements Runtime {
 
         heartBeatExecutor.scheduleAtFixedRate(() -> {
 
-            HeartBeat heartBeat = new HeartBeat();
+            ReportHeartBeatRequest heartBeat = new ReportHeartBeatRequest();
             heartBeat.setAddress(IPUtils.getLocalAddress());
             heartBeat.setReportedTimeStamp(String.valueOf(System.currentTimeMillis()));
             heartBeat.setJobID(connectorRuntimeConfig.getJobID());
 
             Metadata metadata = Metadata.newBuilder()
-                .setType(HeartBeat.class.getSimpleName())
+                .setType(ReportHeartBeatRequest.class.getSimpleName())
                 .build();
 
             Payload request = Payload.newBuilder()

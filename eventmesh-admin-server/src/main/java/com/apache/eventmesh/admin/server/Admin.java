@@ -1,6 +1,6 @@
 package com.apache.eventmesh.admin.server;
 
-import org.apache.eventmesh.common.remote.HeartBeat;
+import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.utils.PagedList;
 
 import org.apache.eventmesh.common.remote.Task;
@@ -18,7 +18,7 @@ public interface Admin extends ComponentLifeCycle {
     /**
      * support for task
      */
-    void reportHeartbeat(HeartBeat heartBeat);
+    void reportHeartbeat(ReportHeartBeatRequest heartBeat);
 
 
 

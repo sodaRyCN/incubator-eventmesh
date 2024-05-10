@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 /**
 * @author sodafang
 * @description 针对表【event_mesh_data_source】的数据库操作Service
-* @createDate 2024-05-06 10:57:45
+* @createDate 2024-05-09 15:52:49
 */
 public interface EventMeshDataSourceService extends IService<EventMeshDataSource> {
 

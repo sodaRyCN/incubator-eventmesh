@@ -7,13 +7,14 @@ import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
+import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.payload.PayloadUtil;
 import org.apache.eventmesh.common.remote.request.BaseGrpcRequest;
+import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
 import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
 import org.apache.eventmesh.common.remote.response.FailResponse;
-import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
-import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,11 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
                 return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN,
                         "not match any request handler"));
             }
-            return PayloadUtil.from(handler.handlerRequest((BaseGrpcRequest) PayloadUtil.parse(value), value.getMetadata()));
+            BaseGrpcResponse response = handler.handlerRequest((BaseGrpcRequest) PayloadUtil.parse(value), value.getMetadata());
+            if (response == null || response instanceof EmptyAckResponse) {
+                return null;
+            }
+            return PayloadUtil.from(response);
         } catch (Exception e) {
             log.warn("process payload {} fail", value.getMetadata().getType(), e);
             if (e instanceof AdminServerException) {
@@ -50,7 +55,11 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
         return new StreamObserver<Payload>() {
             @Override
             public void onNext(Payload value) {
-                responseObserver.onNext(process(value));
+                Payload payload = process(value);
+                if (payload == null) {
+                    return;
+                }
+                responseObserver.onNext(payload);
             }
 
             @Override

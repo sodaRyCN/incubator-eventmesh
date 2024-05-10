@@ -17,11 +17,11 @@ public class EventMeshDataSource implements Serializable {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
-    private Integer type;
+    private Integer dataType;
 
     private String address;
 
-    private String desc;
+    private String description;
 
     private String configuration;
 

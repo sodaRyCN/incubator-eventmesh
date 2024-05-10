@@ -9,14 +9,12 @@
             <result property="adminAddr" column="adminAddr" jdbcType="VARCHAR"/>
             <result property="runtimeAddr" column="runtimeAddr" jdbcType="VARCHAR"/>
             <result property="jobID" column="jobID" jdbcType="INTEGER"/>
-            <result property="positionID" column="positionID" jdbcType="INTEGER"/>
-            <result property="reportTime" column="reportTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="reportTime" column="reportTime" jdbcType="VARCHAR"/>
+            <result property="updateTime" column="updateTime" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,adminAddr,runtimeAddr,
-        jobID,positionID,reportTime,
-        updateTime
+        jobID,reportTime,updateTime
     </sql>
 </mapper>

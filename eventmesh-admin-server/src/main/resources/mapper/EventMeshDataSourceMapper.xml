@@ -6,9 +6,9 @@
 
     <resultMap id="BaseResultMap" type="com.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="type" column="type" jdbcType="INTEGER"/>
+            <result property="dataType" column="dataType" jdbcType="INTEGER"/>
             <result property="address" column="address" jdbcType="VARCHAR"/>
-            <result property="desc" column="desc" jdbcType="VARCHAR"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
             <result property="configuration" column="configuration" jdbcType="VARCHAR"/>
             <result property="createUid" column="createUid" jdbcType="INTEGER"/>
             <result property="updateUid" column="updateUid" jdbcType="INTEGER"/>
@@ -17,8 +17,8 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,type,address,
-        desc,configuration,createUid,
+        id,dataType,address,
+        description,configuration,createUid,
         updateUid,createTime,updateTime
     </sql>
 </mapper>
