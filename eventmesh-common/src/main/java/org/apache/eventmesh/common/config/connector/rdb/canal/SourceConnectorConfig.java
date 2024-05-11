@@ -32,7 +32,9 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
-    private String url;
+    private String dbAddress;
+
+    private int dbPort;
 
     private String userName;
 

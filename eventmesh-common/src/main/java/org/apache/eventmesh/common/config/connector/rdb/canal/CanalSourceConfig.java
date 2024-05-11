@@ -11,6 +11,16 @@ public class CanalSourceConfig extends SourceConfig {
 
     private String destination;
 
+    private Long canalInstanceId;
+
+    private String desc;
+
+    private boolean ddlSync = true;
+
+    private boolean filterTableError = false;
+
+    private Long slaveId;
+
     private Short clientId;
 
     private Integer batchSize;
