@@ -104,36 +104,19 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
                         super.startEventParserInternal(parser, isGroup);
 
                         if (eventParser instanceof MysqlEventParser) {
-                            // 设置支持的类型
+                            // set eventParser support type
                             ((MysqlEventParser) eventParser).setSupportBinlogFormats("ROW");
-                            if (syncFull) {
-                                ((MysqlEventParser) eventParser).setSupportBinlogImages("FULL");
-                            } else {
-                                ((MysqlEventParser) eventParser).setSupportBinlogImages("FULL,MINIMAL");
-                            }
-
+                            ((MysqlEventParser) eventParser).setSupportBinlogImages("FULL");
                             MysqlEventParser mysqlEventParser = (MysqlEventParser) eventParser;
-                            mysqlEventParser.setParallel(false); // otter先使用简单的模式
-                            CanalHAController haController = mysqlEventParser.getHaController();
+                            mysqlEventParser.setParallel(false);
 
+                            CanalHAController haController = mysqlEventParser.getHaController();
                             if (!haController.isStart()) {
                                 haController.start();
                             }
                         }
                     }
-
                 };
-
-                CanalEventSink eventSink = instance.getEventSink();
-                if (eventSink instanceof AbstractCanalEventSink) {
-                    handler = new OtterDownStreamHandler();
-                    handler.setPipelineId(pipelineId);
-                    handler.setDetectingIntervalInSeconds(canal.getCanalParameter().getDetectingIntervalInSeconds());
-                    OtterContextLocator.autowire(handler); // 注入一下spring资源
-                    ((AbstractCanalEventSink) eventSink).addHandler(handler, 0); // 添加到开头
-                    handler.start();
-                }
-
                 return instance;
             }
         });
