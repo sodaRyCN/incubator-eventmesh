@@ -17,6 +17,13 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.admin;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.protobuf.Any;
+import com.google.protobuf.UnsafeByteOperations;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.AdminServiceBlockingStub;
@@ -24,10 +31,10 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.Ad
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.remote.JobState;
-import org.apache.eventmesh.common.remote.Position;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
+import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.KeyValueStore;
@@ -35,20 +42,9 @@ import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.MemoryBasedKeyVal
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.protobuf.Any;
-import com.google.protobuf.UnsafeByteOperations;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AdminOffsetService implements OffsetManagementService {
@@ -100,6 +96,7 @@ public class AdminOffsetService implements OffsetManagementService {
         ReportPositionRequest reportPositionRequest = new ReportPositionRequest();
         reportPositionRequest.setJobID(jobId);
         reportPositionRequest.setState(jobState);
+        reportPositionRequest.setAddress(IPUtils.getLocalAddress());
 
         reportPositionRequest.setRecordPositionList(recordToSyncList);
 
@@ -198,7 +195,7 @@ public class AdminOffsetService implements OffsetManagementService {
             });
         log.info("init record offset {}", initialRecordOffsetMap);
         positionStore.putAll(initialRecordOffsetMap);
-        this.jobState = JobState.INIT;
+        this.jobState = JobState.RUNNING;
         this.jobId = offsetStorageConfig.getExtensions().get("jobId");
     }
 }

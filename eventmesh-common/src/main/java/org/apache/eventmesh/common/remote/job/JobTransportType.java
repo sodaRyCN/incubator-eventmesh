@@ -42,7 +42,7 @@ public enum JobTransportType {
     }
 
     public static JobTransportType getJobTransportType(Integer index) {
-        if (index == null || index < 0 || index > TYPES.length) {
+        if (index == null || index < 0 || index >= TYPES.length) {
             return null;
         }
         return TYPES[index];

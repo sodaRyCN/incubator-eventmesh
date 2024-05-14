@@ -1,5 +1,6 @@
-package com.apache.eventmesh.admin.server.web.handler;
+package com.apache.eventmesh.admin.server.web.handler.request.impl;
 
+import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
 import org.apache.eventmesh.common.remote.request.BaseGrpcRequest;
 import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
 import org.springframework.context.ApplicationListener;

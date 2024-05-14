@@ -1,14 +1,14 @@
 package org.apache.eventmesh.common.remote.request;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.eventmesh.common.remote.JobState;
-import org.apache.eventmesh.common.remote.Position;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class ReportPositionRequest extends BaseGrpcRequest {
 
     private String jobID;
@@ -17,4 +17,5 @@ public class ReportPositionRequest extends BaseGrpcRequest {
 
     private JobState state;
 
+    private String address;
 }

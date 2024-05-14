@@ -4,9 +4,9 @@ public enum DataSourceType {
     MYSQL("MySQL", DataSourceDriverType.MYSQL, DataSourceClassify.RDB),
     REDIS("Redis", DataSourceDriverType.REDIS, DataSourceClassify.CACHE),
     ROCKETMQ("RocketMQ", DataSourceDriverType.ROCKETMQ, DataSourceClassify.MQ);
-    private String name;
-    private DataSourceDriverType driverType;
-    private DataSourceClassify classify;
+    private final String name;
+    private final DataSourceDriverType driverType;
+    private final DataSourceClassify classify;
 
     DataSourceType(String name, DataSourceDriverType driverType, DataSourceClassify classify) {
         this.name = name;
@@ -26,12 +26,12 @@ public enum DataSourceType {
         return classify;
     }
 
-    public static DataSourceType getDataSourceType(String name) {
-        for (DataSourceType dataSourceType : DataSourceType.values()) {
-            if (dataSourceType.getName().equals(name)) {
-                return dataSourceType;
-            }
+    private static final DataSourceType[] TYPES = DataSourceType.values();
+
+    public static DataSourceType getDataSourceType(Integer index) {
+        if (index == null || index < 0 || index >= TYPES.length) {
+            return null;
         }
-        return null;
+        return TYPES[index];
     }
 }

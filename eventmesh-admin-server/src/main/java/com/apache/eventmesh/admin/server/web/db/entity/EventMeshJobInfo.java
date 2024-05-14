@@ -29,8 +29,6 @@ public class EventMeshJobInfo implements Serializable {
 
     private Integer jobType;
 
-    private Integer position;
-
     private Integer createUid;
 
     private Integer updateUid;

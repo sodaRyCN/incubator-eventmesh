@@ -9,11 +9,11 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @TableName event_mesh_job_position
+ * @TableName event_mesh_mysql_position
  */
-@TableName(value ="event_mesh_job_position")
+@TableName(value ="event_mesh_mysql_position")
 @Data
-public class EventMeshJobPosition implements Serializable {
+public class EventMeshMysqlPosition implements Serializable {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
@@ -22,6 +22,10 @@ public class EventMeshJobPosition implements Serializable {
     private String address;
 
     private Long position;
+
+    private Long timestamp;
+
+    private String journalName;
 
     private Date createTime;
 

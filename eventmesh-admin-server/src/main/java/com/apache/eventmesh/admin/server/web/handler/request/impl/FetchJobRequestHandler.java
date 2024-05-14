@@ -1,11 +1,11 @@
-package com.apache.eventmesh.admin.server.web.handler;
+package com.apache.eventmesh.admin.server.web.handler.request.impl;
 
 import com.apache.eventmesh.admin.server.AdminServerException;
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
-import com.apache.eventmesh.admin.server.web.db.service.EventMeshJobPositionService;
+import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -30,9 +30,6 @@ public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, 
 
     @Autowired
     EventMeshDataSourceService dataSourceService;
-
-    @Autowired
-    EventMeshJobPositionService positionService;
 
 
     @Override

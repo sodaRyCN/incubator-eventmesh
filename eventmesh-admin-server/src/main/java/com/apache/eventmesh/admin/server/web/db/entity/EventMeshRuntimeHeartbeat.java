@@ -6,15 +6,16 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
- * @TableName event_mesh_heartbeat
+ * @TableName event_mesh_runtime_heartbeat
  */
-@TableName(value ="event_mesh_heartbeat")
+@TableName(value ="event_mesh_runtime_heartbeat")
 @Data
-public class EventMeshHeartbeat implements Serializable {
+public class EventMeshRuntimeHeartbeat implements Serializable {
     @TableId(type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     private String adminAddr;
 
@@ -24,7 +25,9 @@ public class EventMeshHeartbeat implements Serializable {
 
     private String reportTime;
 
-    private String updateTime;
+    private Date updateTime;
+
+    private Date createTime;
 
     private static final long serialVersionUID = 1L;
 }

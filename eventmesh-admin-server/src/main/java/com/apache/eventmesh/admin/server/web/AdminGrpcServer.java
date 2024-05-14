@@ -1,8 +1,8 @@
 package com.apache.eventmesh.admin.server.web;
 
 import com.apache.eventmesh.admin.server.AdminServerException;
-import com.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
-import com.apache.eventmesh.admin.server.web.handler.RequestHandlerFactory;
+import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
+import com.apache.eventmesh.admin.server.web.handler.request.impl.RequestHandlerFactory;
 import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
