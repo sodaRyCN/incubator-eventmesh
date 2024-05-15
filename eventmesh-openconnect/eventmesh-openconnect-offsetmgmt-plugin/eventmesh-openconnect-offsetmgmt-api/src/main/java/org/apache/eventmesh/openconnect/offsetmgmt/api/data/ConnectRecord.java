@@ -20,6 +20,8 @@ package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordPartition;
 
 import java.util.Objects;
 import java.util.Set;
@@ -45,6 +47,12 @@ public class ConnectRecord {
     public ConnectRecord(RecordPartition recordPartition, RecordOffset recordOffset,
         Long timestamp, Object data) {
         this.position = new RecordPosition(recordPartition, recordOffset);
+        if (recordPartition != null) {
+            this.position.setRecordPartitionClazz(recordPartition.getRecordPartitionClass());
+        }
+        if (recordOffset != null) {
+            this.position.setRecordOffsetClazz(recordOffset.getRecordOffsetClass());
+        }
         this.timestamp = timestamp;
         this.data = data;
     }

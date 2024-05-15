@@ -190,13 +190,15 @@ public class ConnectorRuntime implements Runtime {
         this.offsetManagement = new RecordOffsetManagement();
         this.committableOffsets = RecordOffsetManagement.CommittableOffsets.EMPTY;
         OffsetStorageConfig offsetStorageConfig = sourceConfig.getOffsetStorageConfig();
+        offsetStorageConfig.setDataSourceType(jobResponse.getTransportType().getSrc());
+        offsetStorageConfig.setDataSinkType(jobResponse.getTransportType().getDst());
         this.offsetManagementService = Optional.ofNullable(offsetStorageConfig)
             .map(OffsetStorageConfig::getOffsetStorageType)
             .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
             .orElse(new DefaultOffsetManagementServiceImpl());
         this.offsetManagementService.initialize(offsetStorageConfig);
-        this.offsetStorageWriter = new OffsetStorageWriterImpl(sourceConnector.name(), offsetManagementService);
-        this.offsetStorageReader = new OffsetStorageReaderImpl(sourceConnector.name(), offsetManagementService);
+        this.offsetStorageWriter = new OffsetStorageWriterImpl(offsetManagementService);
+        this.offsetStorageReader = new OffsetStorageReaderImpl(offsetManagementService);
 
         sourceConnector.init(sourceConnectorContext);
 

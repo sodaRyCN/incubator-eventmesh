@@ -19,6 +19,8 @@ package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq.RocketMQRecordPartition;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,29 +28,24 @@ import java.util.Map;
 
 public class OffsetStorageReaderImpl implements OffsetStorageReader {
 
-    private final String connectorName;
-
     private OffsetManagementService offsetManagementService;
 
-    public OffsetStorageReaderImpl(String connectorName, OffsetManagementService offsetManagementService) {
-        this.connectorName = connectorName;
+    public OffsetStorageReaderImpl(OffsetManagementService offsetManagementService) {
         this.offsetManagementService = offsetManagementService;
     }
 
     @Override
     public RecordOffset readOffset(RecordPartition partition) {
-        ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, partition.getPartitionMap());
-        return offsetManagementService.getPositionMap().get(connectorRecordPartition);
+        return offsetManagementService.getPositionMap().get(partition);
     }
 
     @Override
     public Map<RecordPartition, RecordOffset> readOffsets(Collection<RecordPartition> partitions) {
         Map<RecordPartition, RecordOffset> result = new HashMap<>();
-        Map<ConnectorRecordPartition, RecordOffset> allData = offsetManagementService.getPositionMap();
+        Map<RecordPartition, RecordOffset> allData = offsetManagementService.getPositionMap();
         for (RecordPartition key : partitions) {
-            ConnectorRecordPartition connectorRecordPartition = new ConnectorRecordPartition(connectorName, key.getPartitionMap());
-            if (allData.containsKey(connectorRecordPartition)) {
-                result.put(key, allData.get(connectorRecordPartition));
+            if (allData.containsKey(key)) {
+                result.put(key, allData.get(key));
             }
         }
         return result;

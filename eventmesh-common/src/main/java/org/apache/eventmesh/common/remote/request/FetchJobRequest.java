@@ -6,5 +6,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class FetchJobRequest extends BaseGrpcRequest {
-    String jobID;
+    private String jobID;
 }

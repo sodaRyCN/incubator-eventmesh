@@ -31,12 +31,16 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc.Ad
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.remote.JobState;
+import org.apache.eventmesh.common.remote.job.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
+import org.apache.eventmesh.common.remote.response.FetchJobResponse;
+import org.apache.eventmesh.common.remote.response.FetchPositionResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.KeyValueStore;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.MemoryBasedKeyValueStore;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetManagementService;
@@ -61,11 +65,15 @@ public class AdminOffsetService implements OffsetManagementService {
 
     StreamObserver<Payload> requestObserver;
 
-    public KeyValueStore<ConnectorRecordPartition, RecordOffset> positionStore;
+    public KeyValueStore<RecordPartition, RecordOffset> positionStore;
 
     private String jobId;
 
     private JobState jobState;
+
+    private DataSourceType dataSourceType;
+
+    private DataSourceType dataSinkType;
 
 
     @Override
@@ -85,10 +93,10 @@ public class AdminOffsetService implements OffsetManagementService {
 
     @Override
     public void persist() {
-        Map<ConnectorRecordPartition, RecordOffset> recordMap = positionStore.getKVMap();
+        Map<RecordPartition, RecordOffset> recordMap = positionStore.getKVMap();
 
         List<RecordPosition> recordToSyncList = new ArrayList<>();
-        for (Map.Entry<ConnectorRecordPartition, RecordOffset> entry : recordMap.entrySet()) {
+        for (Map.Entry<RecordPartition, RecordOffset> entry : recordMap.entrySet()) {
             RecordPosition recordPosition = new RecordPosition(entry.getKey(), entry.getValue());
             recordToSyncList.add(recordPosition);
         }
@@ -122,47 +130,97 @@ public class AdminOffsetService implements OffsetManagementService {
     }
 
     @Override
-    public Map<ConnectorRecordPartition, RecordOffset> getPositionMap() {
+    public Map<RecordPartition, RecordOffset> getPositionMap() {
         // get from memory storage first
         if (positionStore.getKVMap() == null || positionStore.getKVMap().isEmpty()) {
-            //TODO: get position from adminService
+            log.info("fetch position from admin server");
+            FetchPositionRequest fetchPositionRequest = new FetchPositionRequest();
+            fetchPositionRequest.setJobID(jobId);
+            fetchPositionRequest.setAddress(IPUtils.getLocalAddress());
+            fetchPositionRequest.setDataSourceType(dataSourceType);
+
+            Metadata metadata = Metadata.newBuilder()
+                .setType(FetchPositionRequest.class.getSimpleName())
+                .build();
+
+            Payload request = Payload.newBuilder()
+                .setMetadata(metadata)
+                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
+                    unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(fetchPositionRequest)))).build())
+                .build();
+            Payload response = adminServiceBlockingStub.invoke(request);
+            if (response.getMetadata().getType().equals(FetchPositionResponse.class.getSimpleName())) {
+                FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
+                assert fetchPositionResponse != null;
+                if (fetchPositionResponse.isSuccess()) {
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getPartition(), fetchPositionResponse.getRecordPosition().getOffset());
+                }
+            }
         }
         log.info("memory position map {}", positionStore.getKVMap());
         return positionStore.getKVMap();
     }
 
     @Override
-    public RecordOffset getPosition(ConnectorRecordPartition partition) {
+    public RecordOffset getPosition(RecordPartition partition) {
         // get from memory storage first
         if (positionStore.get(partition) == null) {
-            //TODO: get position from adminService
+            log.info("fetch position from admin server");
+            FetchPositionRequest fetchPositionRequest = new FetchPositionRequest();
+            fetchPositionRequest.setJobID(jobId);
+            fetchPositionRequest.setAddress(IPUtils.getLocalAddress());
+            fetchPositionRequest.setDataSourceType(dataSourceType);
+            RecordPosition recordPosition = new RecordPosition();
+            recordPosition.setRecordPartition(partition);
+            fetchPositionRequest.setRecordPosition(recordPosition);
+
+            Metadata metadata = Metadata.newBuilder()
+                .setType(FetchPositionRequest.class.getSimpleName())
+                .build();
+
+            Payload request = Payload.newBuilder()
+                .setMetadata(metadata)
+                .setBody(Any.newBuilder().setValue(UnsafeByteOperations.
+                    unsafeWrap(Objects.requireNonNull(JsonUtils.toJSONBytes(fetchPositionRequest)))).build())
+                .build();
+            Payload response = adminServiceBlockingStub.invoke(request);
+            if (response.getMetadata().getType().equals(FetchPositionResponse.class.getSimpleName())) {
+                FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
+                assert fetchPositionResponse != null;
+                if (fetchPositionResponse.isSuccess()) {
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getPartition(), fetchPositionResponse.getRecordPosition().getOffset());
+                }
+            }
         }
         log.info("memory record position {}", positionStore.get(partition));
         return positionStore.get(partition);
     }
 
     @Override
-    public void putPosition(Map<ConnectorRecordPartition, RecordOffset> positions) {
+    public void putPosition(Map<RecordPartition, RecordOffset> positions) {
         positionStore.putAll(positions);
     }
 
     @Override
-    public void putPosition(ConnectorRecordPartition partition, RecordOffset position) {
+    public void putPosition(RecordPartition partition, RecordOffset position) {
         positionStore.put(partition, position);
     }
 
     @Override
-    public void removePosition(List<ConnectorRecordPartition> partitions) {
+    public void removePosition(List<RecordPartition> partitions) {
         if (partitions == null) {
             return;
         }
-        for (ConnectorRecordPartition partition : partitions) {
+        for (RecordPartition partition : partitions) {
             positionStore.remove(partition);
         }
     }
 
     @Override
     public void initialize(OffsetStorageConfig offsetStorageConfig) {
+        this.dataSourceType = offsetStorageConfig.getDataSourceType();
+        this.dataSinkType = offsetStorageConfig.getDataSinkType();
+
         this.adminServerAddr = offsetStorageConfig.getOffsetStorageAddr();
         this.channel = ManagedChannelBuilder.forTarget(adminServerAddr)
             .usePlaintext()
@@ -190,8 +248,8 @@ public class AdminOffsetService implements OffsetManagementService {
         requestObserver = adminServiceStub.invokeBiStream(responseObserver);
 
         this.positionStore = new MemoryBasedKeyValueStore<>();
-        Map<ConnectorRecordPartition, RecordOffset> initialRecordOffsetMap = JsonUtils.parseTypeReferenceObject(offsetStorageConfig.getExtensions().get("offset"),
-            new TypeReference<Map<ConnectorRecordPartition, RecordOffset>>(){
+        Map<RecordPartition, RecordOffset> initialRecordOffsetMap = JsonUtils.parseTypeReferenceObject(offsetStorageConfig.getExtensions().get("offset"),
+            new TypeReference<Map<RecordPartition, RecordOffset>>(){
             });
         log.info("init record offset {}", initialRecordOffsetMap);
         positionStore.putAll(initialRecordOffsetMap);

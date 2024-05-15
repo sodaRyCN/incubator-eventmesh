@@ -23,45 +23,30 @@ import java.util.Objects;
 
 public class RecordPartition {
 
-    private Map<String, ?> partitionMap = new HashMap<>();
+//    private Map<String, ?> partitionMap = new HashMap<>();
+
+    private Class<? extends RecordPartition> clazz;
 
     public RecordPartition() {
 
     }
-
-    public RecordPartition(Map<String, ?> partition) {
-        this.partitionMap = partition;
-    }
-
-    public Map<String, ?> getPartitionMap() {
-        return partitionMap;
-    }
+//    public RecordPartition(Map<String, ?> partition) {
+//        this.partitionMap = partition;
+//    }
+//
+//    public Map<String, ?> getPartitionMap() {
+//        return partitionMap;
+//    }
 
     public Class<? extends RecordPartition> getRecordPartitionClass() {
         return RecordPartition.class;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        RecordPartition that = (RecordPartition) o;
-        return Objects.equals(partitionMap, that.partitionMap);
+    public Class<? extends RecordPartition> getClazz() {
+        return clazz;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(partitionMap);
-    }
-
-    @Override
-    public String toString() {
-        return "RecordPartition{" +
-            "partitionMap=" + partitionMap +
-            '}';
+    public void setClazz(Class<? extends RecordPartition> clazz) {
+        this.clazz = clazz;
     }
 }

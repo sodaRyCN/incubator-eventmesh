@@ -18,13 +18,19 @@
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
 
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.ConnectorRecordPartition;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class RocketMQRecordPartition extends ConnectorRecordPartition {
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+
+@EqualsAndHashCode(callSuper = true)
+@Data
+@ToString
+public class RocketMQRecordPartition extends RecordPartition {
 
     /**
      *  key=topic,value=topicName
@@ -32,17 +38,40 @@ public class RocketMQRecordPartition extends ConnectorRecordPartition {
      *  key=queueId,value=queueId
      */
 
+    private String broker;
+
+    private String topic;
+
+    private String queueId;
+
 
     public RocketMQRecordPartition() {
-
+        super();
     }
 
-    public RocketMQRecordPartition(Map<String, ?> partition) {
-        super(partition);
-    }
+//    public RocketMQRecordPartition(Map<String, ?> partition) {
+//        super(partition);
+//    }
 
     public Class<? extends RecordPartition> getRecordPartitionClass() {
         return RocketMQRecordPartition.class;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RocketMQRecordPartition that = (RocketMQRecordPartition) o;
+        return Objects.equals(broker, that.broker) && Objects.equals(topic, that.topic) && Objects.equals(queueId,
+            that.queueId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(broker, topic, queueId);
+    }
 }

@@ -21,13 +21,17 @@ import java.util.Objects;
 
 public class RecordPosition {
 
-    private final RecordPartition recordPartition;
+    private RecordPartition recordPartition;
 
-    private final Class<? extends RecordPartition> recordPartitionClazz;
+    private Class<? extends RecordPartition> recordPartitionClazz;
 
-    private final RecordOffset recordOffset;
+    private RecordOffset recordOffset;
 
-    private final Class<? extends RecordOffset> recordOffsetClazz;
+    private Class<? extends RecordOffset> recordOffsetClazz;
+
+    public RecordPosition(){
+
+    }
 
     public RecordPosition(
         RecordPartition recordPartition, RecordOffset recordOffset) {
@@ -35,6 +39,22 @@ public class RecordPosition {
         this.recordOffset = recordOffset;
         this.recordPartitionClazz = recordPartition.getRecordPartitionClass();
         this.recordOffsetClazz = recordOffset.getRecordOffsetClass();
+    }
+
+    public void setRecordPartition(RecordPartition recordPartition) {
+        this.recordPartition = recordPartition;
+    }
+
+    public void setRecordPartitionClazz(Class<? extends RecordPartition> recordPartitionClazz) {
+        this.recordPartitionClazz = recordPartitionClazz;
+    }
+
+    public void setRecordOffset(RecordOffset recordOffset) {
+        this.recordOffset = recordOffset;
+    }
+
+    public void setRecordOffsetClazz(Class<? extends RecordOffset> recordOffsetClazz) {
+        this.recordOffsetClazz = recordOffsetClazz;
     }
 
     public RecordPartition getPartition() {

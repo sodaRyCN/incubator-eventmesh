@@ -27,39 +27,30 @@ public class RecordOffset {
      * if pull message from mq key=queueOffset,
      * value=queueOffset value
      */
-    private Map<String, ?> offset = new HashMap<>();
+//    private Map<String, ?> offset = new HashMap<>();
+    private Class<? extends RecordOffset> clazz;
 
     public RecordOffset() {
 
     }
 
-    public RecordOffset(Map<String, ?> offset) {
-        this.offset = offset;
-    }
-
-    public Map<String, ?> getOffset() {
-        return offset;
-    }
+//    public RecordOffset(Map<String, ?> offset) {
+//        this.offset = offset;
+//    }
+//
+//    public Map<String, ?> getOffset() {
+//        return offset;
+//    }
 
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return RecordOffset.class;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof RecordOffset)) {
-            return false;
-        }
-        RecordOffset offset1 = (RecordOffset) o;
-        return Objects.equals(offset, offset1.offset);
+    public Class<? extends RecordOffset> getClazz() {
+        return clazz;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(offset);
+    public void setClazz(Class<? extends RecordOffset> clazz) {
+        this.clazz = clazz;
     }
-
 }

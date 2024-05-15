@@ -17,6 +17,8 @@
 
 package org.apache.eventmesh.common.config.connector.offset;
 
+import org.apache.eventmesh.common.remote.job.DataSourceType;
+
 import java.util.Map;
 
 import lombok.Data;
@@ -29,4 +31,8 @@ public class OffsetStorageConfig {
     private String offsetStorageAddr;
 
     private Map<String, String> extensions;
+
+    private DataSourceType dataSourceType;
+
+    private DataSourceType dataSinkType;
 }

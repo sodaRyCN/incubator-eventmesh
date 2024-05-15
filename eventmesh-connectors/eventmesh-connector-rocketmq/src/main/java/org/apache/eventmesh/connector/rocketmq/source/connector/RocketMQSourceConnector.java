@@ -144,15 +144,19 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
 
             for (MessageQueue messageQueue : mqDivided) {
                 try {
-                    Map<String, String> partitionMap = new HashMap<>();
-                    partitionMap.put("topic", messageQueue.getTopic());
-                    partitionMap.put("brokerName", messageQueue.getBrokerName());
-                    partitionMap.put("queueId", messageQueue.getQueueId() + "");
-                    RecordPartition recordPartition = new RocketMQRecordPartition(partitionMap);
+//                    Map<String, String> partitionMap = new HashMap<>();
+//                    partitionMap.put("topic", messageQueue.getTopic());
+//                    partitionMap.put("brokerName", messageQueue.getBrokerName());
+//                    partitionMap.put("queueId", messageQueue.getQueueId() + "");
+                    RocketMQRecordPartition recordPartition = new RocketMQRecordPartition();
+                    recordPartition.setBroker(messageQueue.getBrokerName());
+                    recordPartition.setTopic(messageQueue.getTopic());
+                    recordPartition.setQueueId(messageQueue.getQueueId() + "");
+                    recordPartition.setClazz(recordPartition.getRecordPartitionClass());
                     RecordOffset recordOffset = offsetStorageReader.readOffset(recordPartition);
                     log.info("assigned messageQueue {}, recordOffset {}", messageQueue, recordOffset);
                     if (recordOffset != null) {
-                        long pollOffset = (Long) recordOffset.getOffset().get("queueOffset");
+                        long pollOffset = ((RocketMQRecordOffset) recordOffset).getQueueOffset();
                         if (pollOffset != 0) {
                             consumer.seek(messageQueue, pollOffset);
                         }
@@ -189,13 +193,13 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
     @Override
     public void commit(ConnectRecord record) {
         // send success, commit offset
-        Map<String, ?> map = record.getPosition().getPartition().getPartitionMap();
-        String brokerName = (String) map.get("brokerName");
-        String topic = (String) map.get("topic");
-        int queueId = Integer.parseInt((String) map.get("queueId"));
+        RocketMQRecordPartition rocketMQRecordPartition = (RocketMQRecordPartition)(record.getPosition().getPartition());
+        String brokerName = rocketMQRecordPartition.getBroker();
+        String topic = rocketMQRecordPartition.getTopic();
+        int queueId = Integer.parseInt(rocketMQRecordPartition.getQueueId());
         MessageQueue mq = new MessageQueue(topic, brokerName, queueId);
-        Map<String, ?> offsetMap = record.getPosition().getOffset().getOffset();
-        long offset = Long.parseLong((String) offsetMap.get("queueOffset"));
+        RocketMQRecordOffset rocketMQRecordOffset = (RocketMQRecordOffset)record.getPosition().getOffset();
+        long offset = rocketMQRecordOffset.getQueueOffset();
         long canCommitOffset = removeMessage(mq, offset);
         log.info("commit record {}|mq {}|canCommitOffset {}", record, mq, canCommitOffset);
         // commit offset to prepareCommitOffset
@@ -235,17 +239,19 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
     }
 
     public static RecordOffset convertToRecordOffset(Long offset) {
-        Map<String, String> offsetMap = new HashMap<>();
-        offsetMap.put("queueOffset", offset + "");
-        return new RocketMQRecordOffset(offsetMap);
+        RocketMQRecordOffset rocketMQRecordOffset = new RocketMQRecordOffset();
+        rocketMQRecordOffset.setQueueOffset(offset);
+        return rocketMQRecordOffset;
     }
 
     public static RecordPartition convertToRecordPartition(String topic, String brokerName, int queueId) {
-        Map<String, String> map = new HashMap<>();
-        map.put("topic", topic);
-        map.put("brokerName", brokerName);
-        map.put("queueId", queueId + "");
-        return new RocketMQRecordPartition(map);
+        RocketMQRecordPartition rocketMQRecordPartition = new RocketMQRecordPartition();
+        rocketMQRecordPartition.setBroker(brokerName);
+        rocketMQRecordPartition.setTopic(topic);
+        rocketMQRecordPartition.setQueueId(queueId + "");
+        rocketMQRecordPartition.setClazz(rocketMQRecordPartition.getRecordPartitionClass());
+
+        return rocketMQRecordPartition;
     }
 
     private void putPulledQueueOffset(MessageExt messageExt) {

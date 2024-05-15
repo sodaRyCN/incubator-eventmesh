@@ -21,6 +21,13 @@ import org.apache.eventmesh.common.remote.offset.RecordOffset;
 
 import java.util.Map;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode(callSuper = true)
+@Data
+@ToString
 public class RocketMQRecordOffset extends RecordOffset {
 
     /**
@@ -28,14 +35,15 @@ public class RocketMQRecordOffset extends RecordOffset {
      * key=queueOffset,
      * value=queueOffset value
      */
+    private Long queueOffset;
 
     public RocketMQRecordOffset() {
 
     }
 
-    public RocketMQRecordOffset(Map<String, ?> offset) {
-        super(offset);
-    }
+//    public RocketMQRecordOffset(Map<String, ?> offset) {
+//        super(offset);
+//    }
 
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {

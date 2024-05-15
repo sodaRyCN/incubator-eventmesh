@@ -19,6 +19,7 @@ package org.apache.eventmesh.openconnect.offsetmgmt.api.storage;
 
 import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.spi.EventMeshExtensionType;
 import org.apache.eventmesh.spi.EventMeshSPI;
 
@@ -68,23 +69,23 @@ public interface OffsetManagementService {
      *
      * @return
      */
-    Map<ConnectorRecordPartition, RecordOffset> getPositionMap();
+    Map<RecordPartition, RecordOffset> getPositionMap();
 
-    RecordOffset getPosition(ConnectorRecordPartition partition);
+    RecordOffset getPosition(RecordPartition partition);
 
     /**
      * Put a position info.
      */
-    void putPosition(Map<ConnectorRecordPartition, RecordOffset> positions);
+    void putPosition(Map<RecordPartition, RecordOffset> positions);
 
-    void putPosition(ConnectorRecordPartition partition, RecordOffset position);
+    void putPosition(RecordPartition partition, RecordOffset position);
 
     /**
      * Remove a position info.
      *
      * @param partitions
      */
-    void removePosition(List<ConnectorRecordPartition> partitions);
+    void removePosition(List<RecordPartition> partitions);
 
     void initialize(OffsetStorageConfig offsetStorageConfig);
 

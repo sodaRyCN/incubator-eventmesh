@@ -152,8 +152,8 @@ public class SourceWorker implements ConnectorWorker {
             .map(storageType -> EventMeshExtensionFactory.getExtension(OffsetManagementService.class, storageType))
             .orElse(new DefaultOffsetManagementServiceImpl());
         this.offsetManagementService.initialize(offsetStorageConfig);
-        this.offsetStorageWriter = new OffsetStorageWriterImpl(source.name(), offsetManagementService);
-        this.offsetStorageReader = new OffsetStorageReaderImpl(source.name(), offsetManagementService);
+        this.offsetStorageWriter = new OffsetStorageWriterImpl(offsetManagementService);
+        this.offsetStorageReader = new OffsetStorageReaderImpl(offsetManagementService);
     }
 
     @Override

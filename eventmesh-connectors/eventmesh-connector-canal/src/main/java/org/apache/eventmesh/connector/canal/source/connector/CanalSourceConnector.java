@@ -25,6 +25,7 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -61,6 +62,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
     private CanalSourceConfig sourceConfig;
 
+    private OffsetStorageReader offsetStorageReader;
+
     private CanalServerWithEmbedded canalServer;
 
     private ClientIdentity clientIdentity;
@@ -84,6 +87,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
+        this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
         // init source database connection
         DatabaseConnection.sourceConfig = sourceConfig;
         DatabaseConnection.initSourceConnection();
