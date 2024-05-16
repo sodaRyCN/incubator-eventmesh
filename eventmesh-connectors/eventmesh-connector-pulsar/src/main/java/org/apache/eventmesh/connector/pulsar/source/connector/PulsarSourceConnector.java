@@ -24,6 +24,7 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.pulsar.PulsarRecordPartition;
 
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
@@ -108,10 +109,10 @@ public class PulsarSourceConnector implements Source {
                 Message message = (Message) msg;
                 byte[] body = message.getData();
                 String bodyStr = new String(body, StandardCharsets.UTF_8);
-                Map<String, String> map = new HashMap<>();
-                map.put("topic", consumer.getTopic());
-                map.put("queueId", String.valueOf(message.getSequenceId()));
-                RecordPartition partition = new RecordPartition(map);
+                PulsarRecordPartition partition = new PulsarRecordPartition();
+                partition.setTopic(consumer.getTopic());
+                partition.setQueueId(message.getSequenceId());
+                partition.setClazz(partition.getRecordPartitionClass());
                 ConnectRecord connectRecord = new ConnectRecord(partition, null, timestamp, bodyStr);
                 connectRecord.addExtension("topic", consumer.getTopic());
                 connectRecords.add(connectRecord);

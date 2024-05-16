@@ -15,29 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.offset;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.pulsar;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
 
-public class RecordOffset {
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-    private Class<? extends RecordOffset> clazz;
+@EqualsAndHashCode(callSuper = true)
+@Data
+@ToString
+public class PulsarRecordOffset extends RecordOffset {
 
-    public RecordOffset() {
+    /**
+     * if pull message from mq
+     * key=queueOffset,
+     * value=queueOffset value
+     */
+    private Long queueOffset;
+
+    public PulsarRecordOffset() {
 
     }
 
+    @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return RecordOffset.class;
-    }
-
-    public Class<? extends RecordOffset> getClazz() {
-        return clazz;
-    }
-
-    public void setClazz(Class<? extends RecordOffset> clazz) {
-        this.clazz = clazz;
+        return PulsarRecordOffset.class;
     }
 }

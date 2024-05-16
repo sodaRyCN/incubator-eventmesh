@@ -15,29 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.offset;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.kafka;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
 
-public class RecordOffset {
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-    private Class<? extends RecordOffset> clazz;
+@EqualsAndHashCode(callSuper = true)
+@Data
+@ToString
+public class KafkaRecordOffset extends RecordOffset {
 
-    public RecordOffset() {
+    private Long offset;
+
+    public KafkaRecordOffset() {
 
     }
 
+    @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return RecordOffset.class;
-    }
-
-    public Class<? extends RecordOffset> getClazz() {
-        return clazz;
-    }
-
-    public void setClazz(Class<? extends RecordOffset> clazz) {
-        this.clazz = clazz;
+        return KafkaRecordOffset.class;
     }
 }

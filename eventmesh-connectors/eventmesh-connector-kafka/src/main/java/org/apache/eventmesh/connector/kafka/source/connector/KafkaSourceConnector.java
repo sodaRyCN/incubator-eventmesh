@@ -25,6 +25,8 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.kafka.KafkaRecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.kafka.KafkaRecordPartition;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -118,15 +120,17 @@ public class KafkaSourceConnector implements Source {
     }
 
     public static RecordOffset convertToRecordOffset(Long offset) {
-        Map<String, String> offsetMap = new HashMap<>();
-        offsetMap.put("queueOffset", offset + "");
-        return new RecordOffset(offsetMap);
+        KafkaRecordOffset recordOffset = new KafkaRecordOffset();
+        recordOffset.setOffset(offset);
+        recordOffset.setClazz(recordOffset.getRecordOffsetClass());
+        return recordOffset;
     }
 
     public static RecordPartition convertToRecordPartition(String topic, int partition) {
-        Map<String, String> map = new HashMap<>();
-        map.put("topic", topic);
-        map.put("partition", String.valueOf(partition));
-        return new RecordPartition(map);
+        KafkaRecordPartition recordPartition = new KafkaRecordPartition();
+        recordPartition.setTopic(topic);
+        recordPartition.setPartition(partition);
+        recordPartition.setClazz(recordPartition.getRecordPartitionClass());
+        return recordPartition;
     }
 }

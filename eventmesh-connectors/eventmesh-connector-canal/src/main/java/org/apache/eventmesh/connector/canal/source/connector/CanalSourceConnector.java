@@ -283,6 +283,12 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             entries = message.getEntries();
         }
 
+        for(Entry entry : entries) {
+            entry.
+        }
+
+
+
 //        List<EventData> eventDatas = messageParser.parse(pipelineId, entries); // 过滤事务头/尾和回环数据
 //        Message<EventData> result = new Message<EventData>(message.getId(), eventDatas);
 //        // 更新一下最后的entry时间，包括被过滤的数据
@@ -306,12 +312,12 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         return null;
     }
 
-    // 处理无数据的情况，避免空循环挂死
+    // Handle the situation of no data and avoid empty loop death
     private void applyWait(int emptyTimes) {
         int newEmptyTimes = Math.min(emptyTimes, maxEmptyTimes);
-        if (emptyTimes <= 3) { // 3次以内
+        if (emptyTimes <= 3) {
             Thread.yield();
-        } else { // 超过3次，最多只sleep 10ms
+        } else {
             LockSupport.parkNanos(1000 * 1000L * newEmptyTimes);
         }
     }

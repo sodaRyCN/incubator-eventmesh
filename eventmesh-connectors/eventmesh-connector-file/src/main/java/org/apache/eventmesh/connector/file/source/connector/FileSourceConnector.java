@@ -24,6 +24,7 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.file.FileRecordPartition;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -118,9 +119,10 @@ public class FileSourceConnector implements Source {
     }
 
     public static RecordPartition convertToRecordPartition(String fileName) {
-        Map<String, String> map = new HashMap<>();
-        map.put("fileName", fileName);
-        return new RecordPartition(map);
+        FileRecordPartition fileRecordPartition = new FileRecordPartition();
+        fileRecordPartition.setFileName(fileName);
+        fileRecordPartition.setClazz(fileRecordPartition.getRecordPartitionClass());
+        return fileRecordPartition;
     }
 
     private static String getFileName(String filePath) throws NullPointerException {

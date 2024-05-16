@@ -15,29 +15,44 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.common.remote.offset;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.file;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
+
 import java.util.Objects;
 
-public class RecordOffset {
+import lombok.Data;
+import lombok.ToString;
 
-    private Class<? extends RecordOffset> clazz;
 
-    public RecordOffset() {
+@Data
+@ToString
+public class FileRecordPartition extends RecordPartition {
 
+    private String fileName;
+
+    public FileRecordPartition() {
+        super();
     }
 
-    public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return RecordOffset.class;
+    public Class<? extends RecordPartition> getRecordPartitionClass() {
+        return FileRecordPartition.class;
     }
 
-    public Class<? extends RecordOffset> getClazz() {
-        return clazz;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        FileRecordPartition that = (FileRecordPartition) o;
+        return Objects.equals(fileName, that.fileName);
     }
 
-    public void setClazz(Class<? extends RecordOffset> clazz) {
-        this.clazz = clazz;
+    @Override
+    public int hashCode() {
+        return Objects.hash(fileName);
     }
 }
