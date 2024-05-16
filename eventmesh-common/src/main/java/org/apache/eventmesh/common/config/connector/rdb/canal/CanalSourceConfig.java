@@ -1,6 +1,9 @@
 package org.apache.eventmesh.common.config.connector.rdb.canal;
 
 import org.apache.eventmesh.common.config.connector.SourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
+
+import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,9 +26,11 @@ public class CanalSourceConfig extends SourceConfig {
 
     private Short clientId;
 
-    private Integer batchSize;
+    private Integer batchSize = 10000;
 
-    private Long batchTimeout;
+    private Long batchTimeout = -1L;
+
+    private List<RecordPosition> recordPositions;
 
     private SourceConnectorConfig sourceConnectorConfig;
 }

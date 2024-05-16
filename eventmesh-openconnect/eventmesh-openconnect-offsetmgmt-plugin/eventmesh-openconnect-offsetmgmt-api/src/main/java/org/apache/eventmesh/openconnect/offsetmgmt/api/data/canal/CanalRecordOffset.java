@@ -15,11 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.canal;
 
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
-
-import java.util.Map;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,21 +26,16 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
-public class RocketMQRecordOffset extends RecordOffset {
+public class CanalRecordOffset extends RecordOffset {
 
-    /**
-     * if pull message from mq
-     * key=queueOffset,
-     * value=queueOffset value
-     */
-    private Long queueOffset;
+    private Long offset;
 
-    public RocketMQRecordOffset() {
+    public CanalRecordOffset() {
 
     }
 
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return RocketMQRecordOffset.class;
+        return CanalRecordOffset.class;
     }
 }

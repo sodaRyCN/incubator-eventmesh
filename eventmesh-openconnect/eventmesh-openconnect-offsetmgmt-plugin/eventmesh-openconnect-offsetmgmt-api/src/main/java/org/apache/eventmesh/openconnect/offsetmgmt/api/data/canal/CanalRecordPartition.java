@@ -15,41 +15,30 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
+package org.apache.eventmesh.openconnect.offsetmgmt.api.data.canal;
 
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
-import java.util.Map;
 import java.util.Objects;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 
 @Data
 @ToString
-public class RocketMQRecordPartition extends RecordPartition {
+public class CanalRecordPartition extends RecordPartition {
 
-    /**
-     *  key=topic,value=topicName
-     *  key=brokerName,value=brokerName
-     *  key=queueId,value=queueId
-     */
+    private String journalName;
 
-    private String broker;
+    private Long timeStamp;
 
-    private String topic;
-
-    private String queueId;
-
-
-    public RocketMQRecordPartition() {
+    public CanalRecordPartition() {
         super();
     }
 
     public Class<? extends RecordPartition> getRecordPartitionClass() {
-        return RocketMQRecordPartition.class;
+        return CanalRecordPartition.class;
     }
 
     @Override
@@ -60,13 +49,12 @@ public class RocketMQRecordPartition extends RecordPartition {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        RocketMQRecordPartition that = (RocketMQRecordPartition) o;
-        return Objects.equals(broker, that.broker) && Objects.equals(topic, that.topic) && Objects.equals(queueId,
-            that.queueId);
+        CanalRecordPartition that = (CanalRecordPartition) o;
+        return Objects.equals(journalName, that.journalName) && Objects.equals(timeStamp, that.timeStamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(broker, topic, queueId);
+        return Objects.hash(journalName, timeStamp);
     }
 }

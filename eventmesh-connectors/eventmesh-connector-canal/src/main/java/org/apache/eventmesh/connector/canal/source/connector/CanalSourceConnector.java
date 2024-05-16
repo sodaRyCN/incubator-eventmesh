@@ -19,19 +19,30 @@ package org.apache.eventmesh.connector.canal.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.canal.CanalRecordOffset;
+import org.apache.eventmesh.openconnect.offsetmgmt.api.data.canal.CanalRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
+
+import org.springframework.util.CollectionUtils;
 
 import com.alibaba.otter.canal.common.CanalException;
 import com.alibaba.otter.canal.instance.core.CanalInstance;
@@ -50,10 +61,14 @@ import com.alibaba.otter.canal.parse.CanalEventParser;
 import com.alibaba.otter.canal.parse.ha.CanalHAController;
 import com.alibaba.otter.canal.parse.inbound.mysql.MysqlEventParser;
 import com.alibaba.otter.canal.parse.support.AuthenticationInfo;
+import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.ClientIdentity;
 import com.alibaba.otter.canal.server.embedded.CanalServerWithEmbedded;
 import com.alibaba.otter.canal.sink.AbstractCanalEventSink;
 import com.alibaba.otter.canal.sink.CanalEventSink;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,6 +86,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     private String filter;
 
     private volatile boolean running = false;
+
+    private static final int maxEmptyTimes = 10;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -93,6 +110,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         DatabaseConnection.initSourceConnection();
 
         canalServer = CanalServerWithEmbedded.instance();
+
         canalServer.setCanalInstanceGenerator(new CanalInstanceGenerator() {
             @Override
             public CanalInstance generate(String destination) {
@@ -153,9 +171,24 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             sourceConfig.getSourceConnectorConfig().getDbPort())));
         parameter.setDbUsername(sourceConfig.getSourceConnectorConfig().getUserName());
         parameter.setDbPassword(sourceConfig.getSourceConnectorConfig().getPassWord());
-//        parameter.setPositions();
-//        Arrays.asList("{\"journalName\":\"mysql-bin.000001\",\"position\":6163L,\"timestamp\":1322803601000L}",
-//            "{\"journalName\":\"mysql-bin.000001\",\"position\":6163L,\"timestamp\":1322803601000L}")
+
+        // check positions
+        // example: Arrays.asList("{\"journalName\":\"mysql-bin.000001\",\"position\":6163L,\"timestamp\":1322803601000L}",
+        //         "{\"journalName\":\"mysql-bin.000001\",\"position\":6163L,\"timestamp\":1322803601000L}")
+        if (sourceConfig.getRecordPositions() != null && !sourceConfig.getRecordPositions().isEmpty()) {
+            List<RecordPosition> recordPositions = sourceConfig.getRecordPositions();
+            List<String> positions = new ArrayList<>();
+            recordPositions.forEach(recordPosition -> {
+                Map<String, Object> recordPositionMap = new HashMap<>();
+                CanalRecordPartition canalRecordPartition = (CanalRecordPartition)(recordPosition.getPartition());
+                CanalRecordOffset canalRecordOffset = (CanalRecordOffset)(recordPosition.getOffset());
+                recordPositionMap.put("journalName", canalRecordPartition.getJournalName());
+                recordPositionMap.put("timestamp", canalRecordPartition.getTimeStamp());
+                recordPositionMap.put("position", canalRecordOffset.getOffset());
+                positions.add(JsonUtils.toJSONString(recordPositionMap));
+            });
+            parameter.setPositions(positions);
+        }
 
         parameter.setSlaveId(slaveId);
 
@@ -204,12 +237,83 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
     @Override
     public void stop() {
-
+        if (!running) {
+            return;
+        }
+        running = false;
+        canalServer.stop(sourceConfig.getDestination());
+        canalServer.stop();
     }
 
     @Override
     public List<ConnectRecord> poll() {
+        int emptyTimes = 0;
+        com.alibaba.otter.canal.protocol.Message message = null;
+        if (sourceConfig.getBatchTimeout() < 0) {// perform polling
+            while (running) {
+                message = canalServer.getWithoutAck(clientIdentity, sourceConfig.getBatchSize());
+                if (message == null || message.getId() == -1L) { // empty
+                    applyWait(emptyTimes++);
+                } else {
+                    break;
+                }
+            }
+        } else { // perform with timeout
+            while (running) {
+                message = canalServer.getWithoutAck(clientIdentity, sourceConfig.getBatchSize(), sourceConfig.getBatchTimeout(), TimeUnit.MILLISECONDS);
+                if (message == null || message.getId() == -1L) { // empty
+                    continue;
+                }
+                break;
+            }
+        }
+
+        List<Entry> entries;
+        assert message != null;
+        if (message.isRaw()) {
+            entries = new ArrayList<>(message.getRawEntries().size());
+            for (ByteString entry : message.getRawEntries()) {
+                try {
+                    entries.add(CanalEntry.Entry.parseFrom(entry));
+                } catch (InvalidProtocolBufferException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } else {
+            entries = message.getEntries();
+        }
+
+//        List<EventData> eventDatas = messageParser.parse(pipelineId, entries); // 过滤事务头/尾和回环数据
+//        Message<EventData> result = new Message<EventData>(message.getId(), eventDatas);
+//        // 更新一下最后的entry时间，包括被过滤的数据
+//        if (!CollectionUtils.isEmpty(entries)) {
+//            long lastEntryTime = entries.get(entries.size() - 1).getHeader().getExecuteTime();
+//            if (lastEntryTime > 0) {// oracle的时间可能为0
+//                this.lastEntryTime = lastEntryTime;
+//            }
+//        }
+//
+//        if (dump && logger.isInfoEnabled()) {
+//            String startPosition = null;
+//            String endPosition = null;
+//            if (!CollectionUtils.isEmpty(entries)) {
+//                startPosition = buildPositionForDump(entries.get(0));
+//                endPosition = buildPositionForDump(entries.get(entries.size() - 1));
+//            }
+//
+//            dumpMessages(result, startPosition, endPosition, entries.size());// 记录一下，方便追查问题
+//        }
         return null;
+    }
+
+    // 处理无数据的情况，避免空循环挂死
+    private void applyWait(int emptyTimes) {
+        int newEmptyTimes = Math.min(emptyTimes, maxEmptyTimes);
+        if (emptyTimes <= 3) { // 3次以内
+            Thread.yield();
+        } else { // 超过3次，最多只sleep 10ms
+            LockSupport.parkNanos(1000 * 1000L * newEmptyTimes);
+        }
     }
 
 

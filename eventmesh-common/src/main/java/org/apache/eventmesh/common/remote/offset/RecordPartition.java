@@ -23,20 +23,11 @@ import java.util.Objects;
 
 public class RecordPartition {
 
-//    private Map<String, ?> partitionMap = new HashMap<>();
-
     private Class<? extends RecordPartition> clazz;
 
     public RecordPartition() {
 
     }
-//    public RecordPartition(Map<String, ?> partition) {
-//        this.partitionMap = partition;
-//    }
-//
-//    public Map<String, ?> getPartitionMap() {
-//        return partitionMap;
-//    }
 
     public Class<? extends RecordPartition> getRecordPartitionClass() {
         return RecordPartition.class;
