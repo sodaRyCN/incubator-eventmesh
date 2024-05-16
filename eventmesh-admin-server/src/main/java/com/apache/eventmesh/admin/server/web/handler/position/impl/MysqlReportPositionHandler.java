@@ -8,12 +8,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.job.DataSourceType;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 import org.apache.eventmesh.common.remote.response.FetchPositionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Slf4j
@@ -30,9 +33,11 @@ public class MysqlReportPositionHandler extends PositionHandler {
     public boolean handler(ReportPositionRequest request, Metadata metadata) {
         for (int i = 0; i < 3; i++) {
             try {
+                List<RecordPosition> recordPositionList = request.getRecordPositionList();
                 EventMeshMysqlPosition position = new EventMeshMysqlPosition();
                 position.setJobID(Integer.parseInt(request.getJobID()));
                 position.setAddress(request.getAddress());
+
                 if (!positionService.saveOrUpdateByJob(position)) {
                     log.warn("update job position fail [{}]", request);
                     return false;
