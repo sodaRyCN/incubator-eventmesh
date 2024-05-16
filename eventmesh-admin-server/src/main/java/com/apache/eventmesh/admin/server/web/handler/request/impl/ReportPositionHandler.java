@@ -6,7 +6,7 @@ import com.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
-import com.apache.eventmesh.admin.server.web.handler.position.IPositionHandler;
+import com.apache.eventmesh.admin.server.web.handler.position.IReportPositionHandler;
 import com.apache.eventmesh.admin.server.web.handler.position.PositionHandlerFactory;
 import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +51,7 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
             throw new AdminServerException(ErrorCode.BAD_DB_DATA, String.format("illegal data base [%s] job id [%s] " +
                     "type [%d]", jobInfo.getSourceData(), jobInfo.getJobID(), sourceDB.getDataType()));
         }
-        IPositionHandler handler = positionHandlerFactory.getHandler(type);
+        IReportPositionHandler handler = positionHandlerFactory.getHandler(type);
         if (handler == null) {
             throw new AdminServerException(ErrorCode.BAD_DB_DATA, String.format("illegal data base [%s] job id [%s] " +
                             "type [%d], it not match any handler", jobInfo.getSourceData(), jobInfo.getJobID(),

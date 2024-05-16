@@ -1,15 +1,9 @@
 package org.apache.eventmesh.common.remote.response;
 
-import org.apache.eventmesh.common.remote.JobState;
-import org.apache.eventmesh.common.remote.Position;
-import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.job.JobTransportType;
-import org.apache.eventmesh.common.remote.offset.RecordPosition;
-
-import java.util.Map;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.eventmesh.common.remote.exception.ErrorCode;
+import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

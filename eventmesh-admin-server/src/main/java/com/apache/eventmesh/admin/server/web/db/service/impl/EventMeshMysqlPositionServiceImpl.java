@@ -31,25 +31,28 @@ public class EventMeshMysqlPositionServiceImpl extends ServiceImpl<EventMeshMysq
         if (old == null) {
             return save(position);
         } else {
-            if (old.getAddress()!= null && !old.getAddress().equals(position.getAddress())) {
-                EventMeshPositionReporterHistory history = new EventMeshPositionReporterHistory();
-                history.setRecord(JsonUtils.toJSONString(position));
-                history.setJob(old.getJobID());
-                history.setAddress(old.getAddress());
-                try {
-                    historyService.save(history);
-                } catch (Exception e) {
-                    log.warn("save mysql position reporter changed history fail", e);
-                }
-
-                log.info("job [{}] position reporter changed old [{}], now [{}]", position.getJobID(), old, position);
-            }
-            if (old.getPosition() > position.getPosition()) {
+            if (old.getPosition() >= position.getPosition()) {
                 log.info("job [{}] report position [{}] less than db [{}]", position.getJobID(), position.getPosition(),
                         old.getPosition());
                 return true;
             }
-            return update(position, Wrappers.<EventMeshMysqlPosition>update().eq("updateTime", old.getUpdateTime()));
+            try {
+                return update(position, Wrappers.<EventMeshMysqlPosition>update().eq("updateTime", old.getUpdateTime()));
+            } finally {
+                if (old.getAddress()!= null && !old.getAddress().equals(position.getAddress())) {
+                    EventMeshPositionReporterHistory history = new EventMeshPositionReporterHistory();
+                    history.setRecord(JsonUtils.toJSONString(position));
+                    history.setJob(old.getJobID());
+                    history.setAddress(old.getAddress());
+                    try {
+                        historyService.save(history);
+                    } catch (Exception e) {
+                        log.warn("save mysql position reporter changed history fail", e);
+                    }
+
+                    log.info("job [{}] position reporter changed old [{}], now [{}]", position.getJobID(), old, position);
+                }
+            }
         }
     }
 }

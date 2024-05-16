@@ -1,7 +1,6 @@
-package com.apache.eventmesh.admin.server.web.handler.request.impl;
+package com.apache.eventmesh.admin.server.web.handler.request;
 
-import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
-import org.apache.eventmesh.common.remote.request.BaseGrpcRequest;
+import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;
 import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -14,10 +13,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class RequestHandlerFactory implements ApplicationListener<ContextRefreshedEvent> {
 
-    private final Map<String, BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse>> handlers =
+    private final Map<String, BaseRequestHandler<BaseRemoteRequest, BaseGrpcResponse>> handlers =
             new ConcurrentHashMap<>();
 
-    public BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> getHandler(String type) {
+    public BaseRequestHandler<BaseRemoteRequest, BaseGrpcResponse> getHandler(String type) {
         return handlers.get(type);
     }
 
@@ -27,7 +26,7 @@ public class RequestHandlerFactory implements ApplicationListener<ContextRefresh
         Map<String, BaseRequestHandler> beans =
                 event.getApplicationContext().getBeansOfType(BaseRequestHandler.class);
 
-        for (BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> requestHandler : beans.values()) {
+        for (BaseRequestHandler<BaseRemoteRequest, BaseGrpcResponse> requestHandler : beans.values()) {
             Class<?> clazz = requestHandler.getClass();
             boolean skip = false;
             while (!clazz.getSuperclass().equals(BaseRequestHandler.class)) {
