@@ -5,6 +5,6 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class FetchJobRequest extends BaseGrpcRequest {
+public class FetchJobRequest extends BaseRemoteRequest {
     private String jobID;
 }

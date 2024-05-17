@@ -40,6 +40,9 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
         if (StringUtils.isBlank(request.getJobID())) {
             throw new AdminServerException(ErrorCode.BAD_REQUEST, "illegal job id, it's empty");
         }
+        if (request.getRecordPositionList() == null || request.getRecordPositionList().isEmpty()) {
+            throw new AdminServerException(ErrorCode.BAD_REQUEST, "illegal record position list, it's empty");
+        }
         int jobID;
 
         try {

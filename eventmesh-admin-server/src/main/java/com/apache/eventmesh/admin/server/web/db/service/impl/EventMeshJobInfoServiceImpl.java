@@ -27,7 +27,8 @@ public class EventMeshJobInfoServiceImpl extends ServiceImpl<EventMeshJobInfoMap
         EventMeshJobInfo jobInfo = new EventMeshJobInfo();
         jobInfo.setJobID(jobID);
         jobInfo.setState(state.ordinal());
-        update(jobInfo, Wrappers.<EventMeshJobInfo>update().notIn("state",JobState.DELETE,JobState.COMPLETE));
+        update(jobInfo, Wrappers.<EventMeshJobInfo>update().notIn("state",JobState.DELETE.ordinal(),
+                JobState.COMPLETE.ordinal()));
         return true;
     }
 }

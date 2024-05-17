@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-public abstract class BaseGrpcResponse implements IPayload {
+public abstract class BaseRemoteResponse implements IPayload {
     public static final int UNKNOWN = -1;
     @Setter
     private boolean success = true;

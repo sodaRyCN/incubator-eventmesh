@@ -17,14 +17,17 @@
 
 package org.apache.eventmesh.common.remote.offset;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import java.util.Objects;
 
 public class RecordPosition {
-
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)
     private RecordPartition recordPartition;
 
     private Class<? extends RecordPartition> recordPartitionClazz;
 
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)
     private RecordOffset recordOffset;
 
     private Class<? extends RecordOffset> recordOffsetClazz;
@@ -57,11 +60,11 @@ public class RecordPosition {
         this.recordOffsetClazz = recordOffsetClazz;
     }
 
-    public RecordPartition getPartition() {
+    public RecordPartition getRecordPartition() {
         return recordPartition;
     }
 
-    public RecordOffset getOffset() {
+    public RecordOffset getRecordOffset() {
         return recordOffset;
     }
 

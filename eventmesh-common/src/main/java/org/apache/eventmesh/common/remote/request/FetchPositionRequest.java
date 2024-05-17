@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class FetchPositionRequest extends BaseGrpcRequest {
+public class FetchPositionRequest extends BaseRemoteRequest {
 
     private String jobID;
 

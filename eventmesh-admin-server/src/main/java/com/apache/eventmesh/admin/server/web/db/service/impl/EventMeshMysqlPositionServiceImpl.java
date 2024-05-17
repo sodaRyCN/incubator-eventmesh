@@ -44,13 +44,12 @@ public class EventMeshMysqlPositionServiceImpl extends ServiceImpl<EventMeshMysq
                     history.setRecord(JsonUtils.toJSONString(position));
                     history.setJob(old.getJobID());
                     history.setAddress(old.getAddress());
+                    log.info("job [{}] position reporter changed old [{}], now [{}]", position.getJobID(), old, position);
                     try {
                         historyService.save(history);
                     } catch (Exception e) {
                         log.warn("save mysql position reporter changed history fail", e);
                     }
-
-                    log.info("job [{}] position reporter changed old [{}], now [{}]", position.getJobID(), old, position);
                 }
             }
         }

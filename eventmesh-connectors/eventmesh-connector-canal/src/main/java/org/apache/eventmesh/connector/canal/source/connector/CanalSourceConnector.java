@@ -27,13 +27,12 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.canal.CanalRecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.canal.CanalRecordPartition;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.storage.OffsetStorageReader;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +41,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
 
-import org.springframework.util.CollectionUtils;
-
-import com.alibaba.otter.canal.common.CanalException;
 import com.alibaba.otter.canal.instance.core.CanalInstance;
 import com.alibaba.otter.canal.instance.core.CanalInstanceGenerator;
 import com.alibaba.otter.canal.instance.manager.CanalInstanceWithManager;
@@ -60,13 +56,10 @@ import com.alibaba.otter.canal.instance.manager.model.CanalParameter.StorageMode
 import com.alibaba.otter.canal.parse.CanalEventParser;
 import com.alibaba.otter.canal.parse.ha.CanalHAController;
 import com.alibaba.otter.canal.parse.inbound.mysql.MysqlEventParser;
-import com.alibaba.otter.canal.parse.support.AuthenticationInfo;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.ClientIdentity;
 import com.alibaba.otter.canal.server.embedded.CanalServerWithEmbedded;
-import com.alibaba.otter.canal.sink.AbstractCanalEventSink;
-import com.alibaba.otter.canal.sink.CanalEventSink;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -180,8 +173,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             List<String> positions = new ArrayList<>();
             recordPositions.forEach(recordPosition -> {
                 Map<String, Object> recordPositionMap = new HashMap<>();
-                CanalRecordPartition canalRecordPartition = (CanalRecordPartition)(recordPosition.getPartition());
-                CanalRecordOffset canalRecordOffset = (CanalRecordOffset)(recordPosition.getOffset());
+                CanalRecordPartition canalRecordPartition = (CanalRecordPartition)(recordPosition.getRecordPartition());
+                CanalRecordOffset canalRecordOffset = (CanalRecordOffset)(recordPosition.getRecordOffset());
                 recordPositionMap.put("journalName", canalRecordPartition.getJournalName());
                 recordPositionMap.put("timestamp", canalRecordPartition.getTimeStamp());
                 recordPositionMap.put("position", canalRecordOffset.getOffset());

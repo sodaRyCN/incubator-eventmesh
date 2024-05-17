@@ -7,7 +7,7 @@ import org.apache.eventmesh.common.remote.offset.RecordPosition;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class FetchPositionResponse extends BaseGrpcResponse {
+public class FetchPositionResponse extends BaseRemoteResponse {
 
     private RecordPosition recordPosition;
 

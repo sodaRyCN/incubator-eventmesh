@@ -37,7 +37,6 @@ import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
-import org.apache.eventmesh.common.remote.response.FetchJobResponse;
 import org.apache.eventmesh.common.remote.response.FetchPositionResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
 import org.apache.eventmesh.common.utils.JsonUtils;
@@ -153,7 +152,7 @@ public class AdminOffsetService implements OffsetManagementService {
                 FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getPartition(), fetchPositionResponse.getRecordPosition().getOffset());
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(), fetchPositionResponse.getRecordPosition().getRecordOffset());
                 }
             }
         }
@@ -188,7 +187,7 @@ public class AdminOffsetService implements OffsetManagementService {
                 FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getPartition(), fetchPositionResponse.getRecordPosition().getOffset());
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(), fetchPositionResponse.getRecordPosition().getRecordOffset());
                 }
             }
         }

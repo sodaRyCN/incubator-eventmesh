@@ -13,7 +13,7 @@ import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.payload.PayloadUtil;
 import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;
 import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
-import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
+import org.apache.eventmesh.common.remote.response.BaseRemoteResponse;
 import org.apache.eventmesh.common.remote.response.FailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,13 +30,13 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
                     "exists"));
         }
         try {
-            BaseRequestHandler<BaseRemoteRequest, BaseGrpcResponse> handler =
+            BaseRequestHandler<BaseRemoteRequest, BaseRemoteResponse> handler =
                     handlerFactory.getHandler(value.getMetadata().getType());
             if (handler == null) {
-                return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN,
+                return PayloadUtil.from(FailResponse.build(BaseRemoteResponse.UNKNOWN,
                         "not match any request handler"));
             }
-            BaseGrpcResponse response = handler.handlerRequest((BaseRemoteRequest) PayloadUtil.parse(value), value.getMetadata());
+            BaseRemoteResponse response = handler.handlerRequest((BaseRemoteRequest) PayloadUtil.parse(value), value.getMetadata());
             if (response == null || response instanceof EmptyAckResponse) {
                 return null;
             }
