@@ -39,6 +39,10 @@ public class ConnectRecord {
 
     private KeyValue extensions;
 
+    public ConnectRecord() {
+
+    }
+
     public ConnectRecord(RecordPartition recordPartition, RecordOffset recordOffset,
         Long timestamp) {
         this(recordPartition, recordOffset, timestamp, null);

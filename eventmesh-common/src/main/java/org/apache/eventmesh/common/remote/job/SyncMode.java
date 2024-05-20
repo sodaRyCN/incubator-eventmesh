@@ -19,6 +19,7 @@ public enum SyncMode {
                 return mode;
             }
         }
+        return null;
     }
 
     public String getValue() {

@@ -21,6 +21,7 @@ public enum SyncConsistency {
                 return mode;
             }
         }
+        return null;
     }
 
     public String getValue() {

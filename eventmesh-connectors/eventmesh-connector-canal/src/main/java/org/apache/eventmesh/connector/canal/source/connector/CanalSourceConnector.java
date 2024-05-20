@@ -21,7 +21,9 @@ import org.apache.eventmesh.common.config.connector.Config;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.utils.JsonUtils;
+import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
+import org.apache.eventmesh.connector.canal.source.EntryParser;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
@@ -67,6 +69,7 @@ import com.alibaba.otter.canal.protocol.ClientIdentity;
 import com.alibaba.otter.canal.server.embedded.CanalServerWithEmbedded;
 import com.alibaba.otter.canal.sink.AbstractCanalEventSink;
 import com.alibaba.otter.canal.sink.CanalEventSink;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -107,7 +110,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
         // init source database connection
         DatabaseConnection.sourceConfig = sourceConfig;
-        DatabaseConnection.initSourceConnection();
+//        DatabaseConnection.initSourceConnection();
 
         canalServer = CanalServerWithEmbedded.instance();
 
@@ -180,8 +183,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             List<String> positions = new ArrayList<>();
             recordPositions.forEach(recordPosition -> {
                 Map<String, Object> recordPositionMap = new HashMap<>();
-                CanalRecordPartition canalRecordPartition = (CanalRecordPartition)(recordPosition.getPartition());
-                CanalRecordOffset canalRecordOffset = (CanalRecordOffset)(recordPosition.getOffset());
+                CanalRecordPartition canalRecordPartition = (CanalRecordPartition)(recordPosition.getRecordPartition());
+                CanalRecordOffset canalRecordOffset = (CanalRecordOffset)(recordPosition.getRecordOffset());
                 recordPositionMap.put("journalName", canalRecordPartition.getJournalName());
                 recordPositionMap.put("timestamp", canalRecordPartition.getTimeStamp());
                 recordPositionMap.put("position", canalRecordOffset.getOffset());
@@ -227,7 +230,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
     @Override
     public void commit(ConnectRecord record) {
-
+        long batchId = Long.parseLong(record.getExtension("messageId"));
+        canalServer.ack(clientIdentity, batchId);
     }
 
     @Override
@@ -283,33 +287,26 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             entries = message.getEntries();
         }
 
-        for(Entry entry : entries) {
-            entry.
-        }
+        EntryParser entryParser = new EntryParser();
+        List<CanalConnectRecord> connectRecordList = entryParser.parse(sourceConfig, entries);
 
+        CanalConnectRecord lastRecord = connectRecordList.get(connectRecordList.size() - 1);
 
+        CanalRecordPartition canalRecordPartition = new CanalRecordPartition();
+        canalRecordPartition.setJournalName(lastRecord.getJournalName());
+        canalRecordPartition.setTimeStamp(lastRecord.getExecuteTime());
 
-//        List<EventData> eventDatas = messageParser.parse(pipelineId, entries); // 过滤事务头/尾和回环数据
-//        Message<EventData> result = new Message<EventData>(message.getId(), eventDatas);
-//        // 更新一下最后的entry时间，包括被过滤的数据
-//        if (!CollectionUtils.isEmpty(entries)) {
-//            long lastEntryTime = entries.get(entries.size() - 1).getHeader().getExecuteTime();
-//            if (lastEntryTime > 0) {// oracle的时间可能为0
-//                this.lastEntryTime = lastEntryTime;
-//            }
-//        }
-//
-//        if (dump && logger.isInfoEnabled()) {
-//            String startPosition = null;
-//            String endPosition = null;
-//            if (!CollectionUtils.isEmpty(entries)) {
-//                startPosition = buildPositionForDump(entries.get(0));
-//                endPosition = buildPositionForDump(entries.get(entries.size() - 1));
-//            }
-//
-//            dumpMessages(result, startPosition, endPosition, entries.size());// 记录一下，方便追查问题
-//        }
-        return null;
+        CanalRecordOffset canalRecordOffset = new CanalRecordOffset();
+        canalRecordOffset.setOffset(lastRecord.getBinLogOffset());
+
+        ConnectRecord connectRecord = new ConnectRecord(canalRecordPartition, canalRecordOffset, System.currentTimeMillis());
+        connectRecord.addExtension("messageId", message.getId());
+        connectRecord.setData(connectRecordList);
+
+        List<ConnectRecord> result = new ArrayList<>();
+        result.add(connectRecord);
+
+        return result;
     }
 
     // Handle the situation of no data and avoid empty loop death
@@ -321,7 +318,6 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             LockSupport.parkNanos(1000 * 1000L * newEmptyTimes);
         }
     }
-
 
     @Override
     public Source create() {

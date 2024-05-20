@@ -153,7 +153,7 @@ public class AdminOffsetService implements OffsetManagementService {
                 FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getPartition(), fetchPositionResponse.getRecordPosition().getOffset());
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(), fetchPositionResponse.getRecordPosition().getRecordOffset());
                 }
             }
         }
@@ -188,7 +188,7 @@ public class AdminOffsetService implements OffsetManagementService {
                 FetchPositionResponse fetchPositionResponse = JsonUtils.parseObject(response.getBody().getValue().toStringUtf8(), FetchPositionResponse.class);
                 assert fetchPositionResponse != null;
                 if (fetchPositionResponse.isSuccess()) {
-                    positionStore.put(fetchPositionResponse.getRecordPosition().getPartition(), fetchPositionResponse.getRecordPosition().getOffset());
+                    positionStore.put(fetchPositionResponse.getRecordPosition().getRecordPartition(), fetchPositionResponse.getRecordPosition().getRecordOffset());
                 }
             }
         }

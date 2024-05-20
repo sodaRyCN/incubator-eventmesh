@@ -57,11 +57,11 @@ public class RecordPosition {
         this.recordOffsetClazz = recordOffsetClazz;
     }
 
-    public RecordPartition getPartition() {
+    public RecordPartition getRecordPartition() {
         return recordPartition;
     }
 
-    public RecordOffset getOffset() {
+    public RecordOffset getRecordOffset() {
         return recordOffset;
     }
 

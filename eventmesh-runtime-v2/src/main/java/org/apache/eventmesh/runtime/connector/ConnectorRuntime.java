@@ -292,6 +292,8 @@ public class ConnectorRuntime implements Runtime {
 
     @Override
     public void stop() throws Exception {
+        sourceConnector.stop();
+        sinkConnector.stop();
         heartBeatExecutor.shutdown();
         requestObserver.onCompleted();
         if (channel != null && !channel.isShutdown()) {
