@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.canal;
+package org.apache.eventmesh.common.remote.offset.canal;
 
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 

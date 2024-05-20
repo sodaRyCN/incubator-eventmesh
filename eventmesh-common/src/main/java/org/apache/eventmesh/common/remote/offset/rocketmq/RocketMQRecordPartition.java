@@ -15,15 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.rocketmq;
+package org.apache.eventmesh.common.remote.offset.rocketmq;
 
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
-import java.util.Map;
 import java.util.Objects;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 
