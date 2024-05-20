@@ -3,6 +3,6 @@ package com.apache.eventmesh.admin.server.web.handler.position;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 
-public interface IPositionHandler {
+public interface IReportPositionHandler {
     boolean handler(ReportPositionRequest request, Metadata metadata);
 }

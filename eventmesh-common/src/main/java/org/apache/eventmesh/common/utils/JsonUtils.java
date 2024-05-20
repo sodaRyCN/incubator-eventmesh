@@ -163,6 +163,14 @@ public class JsonUtils {
         }
     }
 
+    public static <T> T parseTypeReferenceObject(byte[] text, TypeReference<T> typeReference) {
+        try {
+            return OBJECT_MAPPER.readValue(text, typeReference);
+        } catch (IOException e) {
+            throw new JsonException("deserialize json string to typeReference error", e);
+        }
+    }
+
     public static JsonNode getJsonNode(String text) {
         if (StringUtils.isEmpty(text)) {
             return null;

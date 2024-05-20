@@ -17,10 +17,6 @@
 
 package org.apache.eventmesh.common.remote.offset;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 public class RecordOffset {
 
     private Class<? extends RecordOffset> clazz;

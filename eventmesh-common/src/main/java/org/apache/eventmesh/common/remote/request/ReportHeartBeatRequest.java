@@ -5,7 +5,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class ReportHeartBeatRequest extends BaseGrpcRequest {
+public class ReportHeartBeatRequest extends BaseRemoteRequest {
 
     private String address;
 

@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class FetchJobResponse extends BaseGrpcResponse {
+public class FetchJobResponse extends BaseRemoteResponse {
 
     private Integer id;
 

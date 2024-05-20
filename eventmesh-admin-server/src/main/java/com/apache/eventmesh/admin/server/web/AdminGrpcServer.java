@@ -2,7 +2,7 @@ package com.apache.eventmesh.admin.server.web;
 
 import com.apache.eventmesh.admin.server.AdminServerException;
 import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
-import com.apache.eventmesh.admin.server.web.handler.request.impl.RequestHandlerFactory;
+import com.apache.eventmesh.admin.server.web.handler.request.RequestHandlerFactory;
 import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +11,9 @@ import org.apache.eventmesh.common.protocol.grpc.adminserver.AdminServiceGrpc;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Payload;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.payload.PayloadUtil;
-import org.apache.eventmesh.common.remote.request.BaseGrpcRequest;
+import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;
 import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
-import org.apache.eventmesh.common.remote.response.BaseGrpcResponse;
+import org.apache.eventmesh.common.remote.response.BaseRemoteResponse;
 import org.apache.eventmesh.common.remote.response.FailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,13 +30,13 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
                     "exists"));
         }
         try {
-            BaseRequestHandler<BaseGrpcRequest, BaseGrpcResponse> handler =
+            BaseRequestHandler<BaseRemoteRequest, BaseRemoteResponse> handler =
                     handlerFactory.getHandler(value.getMetadata().getType());
             if (handler == null) {
-                return PayloadUtil.from(FailResponse.build(BaseGrpcResponse.UNKNOWN,
+                return PayloadUtil.from(FailResponse.build(BaseRemoteResponse.UNKNOWN,
                         "not match any request handler"));
             }
-            BaseGrpcResponse response = handler.handlerRequest((BaseGrpcRequest) PayloadUtil.parse(value), value.getMetadata());
+            BaseRemoteResponse response = handler.handlerRequest((BaseRemoteRequest) PayloadUtil.parse(value), value.getMetadata());
             if (response == null || response instanceof EmptyAckResponse) {
                 return null;
             }

@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Slf4j
 public class PositionHandlerFactory implements ApplicationListener<ContextRefreshedEvent> {
-    private final Map<DataSourceType, IPositionHandler> handlers =
+    private final Map<DataSourceType, PositionHandler> handlers =
             new ConcurrentHashMap<>();
-    public IPositionHandler getHandler(DataSourceType type) {
+    public PositionHandler getHandler(DataSourceType type) {
         return handlers.get(type);
     }
 

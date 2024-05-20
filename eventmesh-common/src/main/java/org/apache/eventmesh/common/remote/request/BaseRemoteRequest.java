@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-public abstract class BaseGrpcRequest implements IPayload {
+public abstract class BaseRemoteRequest implements IPayload {
     private Map<String, String> header = new HashMap<>();
 
     public void addHeader(String key, String value) {

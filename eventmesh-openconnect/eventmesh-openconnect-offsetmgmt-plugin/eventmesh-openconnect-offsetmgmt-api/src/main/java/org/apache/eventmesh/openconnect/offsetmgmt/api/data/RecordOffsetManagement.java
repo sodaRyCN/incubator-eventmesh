@@ -17,6 +17,7 @@
 
 package org.apache.eventmesh.openconnect.offsetmgmt.api.data;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
@@ -30,8 +31,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RecordOffsetManagement {
