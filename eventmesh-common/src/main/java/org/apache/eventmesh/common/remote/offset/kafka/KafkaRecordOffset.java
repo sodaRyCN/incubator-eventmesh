@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.S3;
+package org.apache.eventmesh.common.remote.offset.kafka;
 
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 
@@ -26,16 +26,16 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
-public class S3RecordOffset extends RecordOffset {
+public class KafkaRecordOffset extends RecordOffset {
 
     private Long offset;
 
-    public S3RecordOffset() {
+    public KafkaRecordOffset() {
 
     }
 
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return S3RecordOffset.class;
+        return KafkaRecordOffset.class;
     }
 }

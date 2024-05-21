@@ -25,8 +25,8 @@ import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SourceConnectorContext;
 import org.apache.eventmesh.openconnect.api.source.Source;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.kafka.KafkaRecordOffset;
-import org.apache.eventmesh.openconnect.offsetmgmt.api.data.kafka.KafkaRecordPartition;
+import org.apache.eventmesh.common.remote.offset.kafka.KafkaRecordOffset;
+import org.apache.eventmesh.common.remote.offset.kafka.KafkaRecordPartition;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -36,9 +36,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 public class KafkaSourceConnector implements Source {

@@ -15,27 +15,46 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.kafka;
+package org.apache.eventmesh.common.remote.offset.kafka;
 
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
+import org.apache.eventmesh.common.remote.offset.RecordPartition;
+
+import java.util.Objects;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@EqualsAndHashCode(callSuper = true)
+
 @Data
 @ToString
-public class KafkaRecordOffset extends RecordOffset {
+public class KafkaRecordPartition extends RecordPartition {
 
-    private Long offset;
+    private String topic;
 
-    public KafkaRecordOffset() {
+    private Integer partition;
 
+    public KafkaRecordPartition() {
+        super();
+    }
+
+    public Class<? extends RecordPartition> getRecordPartitionClass() {
+        return KafkaRecordPartition.class;
     }
 
     @Override
-    public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return KafkaRecordOffset.class;
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        KafkaRecordPartition that = (KafkaRecordPartition) o;
+        return Objects.equals(topic, that.topic) && Objects.equals(partition, that.partition);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(topic, partition);
     }
 }

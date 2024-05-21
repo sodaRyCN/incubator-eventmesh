@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.pulsar;
+package org.apache.eventmesh.common.remote.offset.file;
 
 import org.apache.eventmesh.common.remote.offset.RecordOffset;
 
@@ -26,21 +26,16 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
-public class PulsarRecordOffset extends RecordOffset {
+public class FileRecordOffset extends RecordOffset {
 
-    /**
-     * if pull message from mq
-     * key=queueOffset,
-     * value=queueOffset value
-     */
-    private Long queueOffset;
+    private Long offset;
 
-    public PulsarRecordOffset() {
+    public FileRecordOffset() {
 
     }
 
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return PulsarRecordOffset.class;
+        return FileRecordOffset.class;
     }
 }

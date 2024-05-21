@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.S3;
+package org.apache.eventmesh.common.remote.offset.S3;
 
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.openconnect.offsetmgmt.api.data.pulsar;
+package org.apache.eventmesh.common.remote.offset.file;
 
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
@@ -27,19 +27,16 @@ import lombok.ToString;
 
 @Data
 @ToString
-public class PulsarRecordPartition extends RecordPartition {
+public class FileRecordPartition extends RecordPartition {
 
-    private String topic;
+    private String fileName;
 
-    private Long queueId;
-
-
-    public PulsarRecordPartition() {
+    public FileRecordPartition() {
         super();
     }
 
     public Class<? extends RecordPartition> getRecordPartitionClass() {
-        return PulsarRecordPartition.class;
+        return FileRecordPartition.class;
     }
 
     @Override
@@ -50,13 +47,12 @@ public class PulsarRecordPartition extends RecordPartition {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        PulsarRecordPartition that = (PulsarRecordPartition) o;
-        return Objects.equals(topic, that.topic) && Objects.equals(queueId,
-            that.queueId);
+        FileRecordPartition that = (FileRecordPartition) o;
+        return Objects.equals(fileName, that.fileName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(topic, queueId);
+        return Objects.hash(fileName);
     }
 }

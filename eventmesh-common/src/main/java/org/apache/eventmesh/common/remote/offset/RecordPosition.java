@@ -17,17 +17,46 @@
 
 package org.apache.eventmesh.common.remote.offset;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.apache.eventmesh.common.remote.offset.S3.S3RecordOffset;
+import org.apache.eventmesh.common.remote.offset.S3.S3RecordPartition;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
+import org.apache.eventmesh.common.remote.offset.file.FileRecordOffset;
+import org.apache.eventmesh.common.remote.offset.file.FileRecordPartition;
+import org.apache.eventmesh.common.remote.offset.kafka.KafkaRecordOffset;
+import org.apache.eventmesh.common.remote.offset.kafka.KafkaRecordPartition;
+import org.apache.eventmesh.common.remote.offset.pulsar.PulsarRecordOffset;
+import org.apache.eventmesh.common.remote.offset.pulsar.PulsarRecordPartition;
+import org.apache.eventmesh.common.remote.offset.rocketmq.RocketMQRecordOffset;
+import org.apache.eventmesh.common.remote.offset.rocketmq.RocketMQRecordPartition;
 
 import java.util.Objects;
 
 public class RecordPosition {
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = CanalRecordPartition.class, name = "CanalRecordPartition"),
+            @JsonSubTypes.Type(value = FileRecordPartition.class, name = "FileRecordPartition"),
+            @JsonSubTypes.Type(value = S3RecordPartition.class, name = "S3RecordPartition"),
+            @JsonSubTypes.Type(value = KafkaRecordPartition.class, name = "KafkaRecordPartition"),
+            @JsonSubTypes.Type(value = PulsarRecordPartition.class, name = "PulsarRecordPartition"),
+            @JsonSubTypes.Type(value = RocketMQRecordPartition.class, name = "RocketMQRecordPartition"),
+    })
     private RecordPartition recordPartition;
 
     private Class<? extends RecordPartition> recordPartitionClazz;
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)
+    @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = CanalRecordOffset.class, name = "CanalRecordOffset"),
+            @JsonSubTypes.Type(value = FileRecordOffset.class, name = "FileRecordOffset"),
+            @JsonSubTypes.Type(value = S3RecordOffset.class, name = "S3RecordOffset"),
+            @JsonSubTypes.Type(value = KafkaRecordOffset.class, name = "KafkaRecordOffset"),
+            @JsonSubTypes.Type(value = PulsarRecordOffset.class, name = "PulsarRecordOffset"),
+            @JsonSubTypes.Type(value = RocketMQRecordOffset.class, name = "RocketMQRecordOffset"),
+    })
     private RecordOffset recordOffset;
 
     private Class<? extends RecordOffset> recordOffsetClazz;
