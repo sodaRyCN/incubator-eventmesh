@@ -11,32 +11,32 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
 
-    private static DruidDataSource sourceDataSource;
+    public static DruidDataSource sourceDataSource;
 
-    private static DruidDataSource sinkDataSource;
+    public static DruidDataSource sinkDataSource;
 
     public static CanalSourceConfig sourceConfig;
 
     public static CanalSinkConfig sinkConfig;
 
-//    public static void initSourceConnection() {
-//        sourceDataSource = new DruidDataSource();
-//        sourceDataSource.setUrl(sourceConfig.getSourceConnectorConfig().getUrl());
-//        sourceDataSource.setUsername(sourceConfig.getSourceConnectorConfig().getUserName());
-//        sourceDataSource.setPassword(sourceConfig.getSourceConnectorConfig().getPassWord());
-//        sourceDataSource.setInitialSize(5);
-//        sourceDataSource.setMinIdle(5);
-//        sourceDataSource.setMaxActive(20);
-//        sourceDataSource.setMaxWait(60000);
-//        sourceDataSource.setTimeBetweenEvictionRunsMillis(60000);
-//        sourceDataSource.setMinEvictableIdleTimeMillis(300000);
-//        sourceDataSource.setValidationQuery("SELECT 1");
-//        sourceDataSource.setTestWhileIdle(true);
-//        sourceDataSource.setTestOnBorrow(false);
-//        sourceDataSource.setTestOnReturn(false);
-//        sourceDataSource.setPoolPreparedStatements(true);
-//        sourceDataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
-//    }
+    public static void initSourceConnection() {
+        sourceDataSource = new DruidDataSource();
+        sourceDataSource.setUrl(sourceConfig.getSourceConnectorConfig().getUrl());
+        sourceDataSource.setUsername(sourceConfig.getSourceConnectorConfig().getUserName());
+        sourceDataSource.setPassword(sourceConfig.getSourceConnectorConfig().getPassWord());
+        sourceDataSource.setInitialSize(5);
+        sourceDataSource.setMinIdle(5);
+        sourceDataSource.setMaxActive(20);
+        sourceDataSource.setMaxWait(60000);
+        sourceDataSource.setTimeBetweenEvictionRunsMillis(60000);
+        sourceDataSource.setMinEvictableIdleTimeMillis(300000);
+        sourceDataSource.setValidationQuery("SELECT 1");
+        sourceDataSource.setTestWhileIdle(true);
+        sourceDataSource.setTestOnBorrow(false);
+        sourceDataSource.setTestOnReturn(false);
+        sourceDataSource.setPoolPreparedStatements(true);
+        sourceDataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
+    }
 
     public static void initSinkConnection() {
         sinkDataSource = new DruidDataSource();

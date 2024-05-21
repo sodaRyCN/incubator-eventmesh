@@ -23,6 +23,7 @@ import org.apache.eventmesh.common.config.connector.Config;
 
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
+import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -30,7 +31,16 @@ import org.apache.eventmesh.openconnect.api.sink.Sink;
 import org.apache.eventmesh.openconnect.offsetmgmt.api.data.ConnectRecord;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.StatementCallback;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     private CanalSinkConfig sinkConfig;
+
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -47,14 +59,17 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     @Override
     public void init(Config config) throws Exception {
         // init config for canal source connector
-        this.sinkConfig = (CanalSinkConfig)config;
+        this.sinkConfig = (CanalSinkConfig) config;
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         // init config for canal source connector
         SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
-        this.sinkConfig = (CanalSinkConfig)sinkConnectorContext.getSinkConfig();
+        this.sinkConfig = (CanalSinkConfig) sinkConnectorContext.getSinkConfig();
+        DatabaseConnection.sinkConfig = this.sinkConfig;
+        DatabaseConnection.initSinkConnection();
+        jdbcTemplate = new JdbcTemplate(DatabaseConnection.sinkDataSource);
     }
 
     @Override
@@ -80,14 +95,19 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
         for (ConnectRecord connectRecord : sinkRecords) {
-            List<CanalConnectRecord> canalConnectRecordList = (List<CanalConnectRecord>)connectRecord.getData();
-            for (CanalConnectRecord canalConnectRecord : canalConnectRecordList) {
-                if (sinkConfig.getSinkConnectorConfig().getSchemaName().equals(canalConnectRecord.getSchemaName()) &&
+            List<CanalConnectRecord> canalConnectRecordList = (List<CanalConnectRecord>) connectRecord.getData();
+            if (isDdlDatas(canalConnectRecordList)) {
+                doDdl(canalConnectRecordList);
+            } else {
+                for (CanalConnectRecord canalConnectRecord : canalConnectRecordList) {
+                    if (sinkConfig.getSinkConnectorConfig().getSchemaName().equals(canalConnectRecord.getSchemaName()) &&
                         sinkConfig.getSinkConnectorConfig().getTableName().equals(canalConnectRecord.getTableName())) {
 
 
+                    }
                 }
             }
+
         }
     }
 
@@ -110,5 +130,41 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             }
         }
         return result;
+    }
+
+    /**
+     * 执行ddl的调用，处理逻辑比较简单: 串行调用
+     *
+     * @param canalConnectRecordList
+     */
+    private void doDdl(List<CanalConnectRecord> canalConnectRecordList) {
+        for (final CanalConnectRecord record : canalConnectRecordList) {
+            if (!sinkConfig.getSinkConnectorConfig().getSchemaName().equals(record.getSchemaName()) ||
+                !sinkConfig.getSinkConnectorConfig().getTableName().equals(record.getTableName())) {
+                continue;
+            }
+            try {
+                Boolean result = jdbcTemplate.execute(new StatementCallback<Boolean>() {
+
+                    public Boolean doInStatement(Statement stmt) throws SQLException, DataAccessException {
+                        boolean result = true;
+                        if (StringUtils.isNotEmpty(record.getDdlSchemaName())) {
+                            // 如果mysql，执行ddl时，切换到在源库执行的schema上
+                            // result &= stmt.execute("use " +
+                            // data.getDdlSchemaName());
+
+                            // 解决当数据库名称为关键字如"Order"的时候,会报错,无法同步
+                            result &= stmt.execute("use `" + record.getDdlSchemaName() + "`");
+                        }
+                        result &= stmt.execute(record.getSql());
+                        return result;
+                    }
+                });
+
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+
+        }
     }
 }
