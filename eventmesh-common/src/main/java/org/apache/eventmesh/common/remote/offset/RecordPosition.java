@@ -61,12 +61,12 @@ public class RecordPosition {
 
     private Class<? extends RecordOffset> recordOffsetClazz;
 
-    public RecordPosition(){
+    public RecordPosition() {
 
     }
 
     public RecordPosition(
-        RecordPartition recordPartition, RecordOffset recordOffset) {
+            RecordPartition recordPartition, RecordOffset recordOffset) {
         this.recordPartition = recordPartition;
         this.recordOffset = recordOffset;
         this.recordPartitionClazz = recordPartition.getRecordPartitionClass();
@@ -75,18 +75,20 @@ public class RecordPosition {
 
     public void setRecordPartition(RecordPartition recordPartition) {
         this.recordPartition = recordPartition;
-    }
-
-    public void setRecordPartitionClazz(Class<? extends RecordPartition> recordPartitionClazz) {
-        this.recordPartitionClazz = recordPartitionClazz;
+        if (recordPartition == null) {
+            this.recordPartitionClazz = null;
+            return;
+        }
+        this.recordPartitionClazz = recordPartition.getRecordPartitionClass();
     }
 
     public void setRecordOffset(RecordOffset recordOffset) {
         this.recordOffset = recordOffset;
-    }
-
-    public void setRecordOffsetClazz(Class<? extends RecordOffset> recordOffsetClazz) {
-        this.recordOffsetClazz = recordOffsetClazz;
+        if (recordOffset == null) {
+            this.recordOffsetClazz = null;
+            return;
+        }
+        this.recordOffsetClazz = recordOffset.getRecordOffsetClass();
     }
 
     public RecordPartition getRecordPartition() {
