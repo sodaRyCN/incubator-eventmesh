@@ -32,6 +32,8 @@ public class SourceConnectorConfig {
 
     private String connectorName;
 
+    private String url;
+
     private String dbAddress;
 
     private int dbPort;
@@ -39,5 +41,9 @@ public class SourceConnectorConfig {
     private String userName;
 
     private String passWord;
+
+    private String schemaName;
+
+    private String tableName;
 
 }

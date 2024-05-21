@@ -58,14 +58,10 @@ import com.alibaba.otter.canal.instance.manager.model.CanalParameter.StorageMode
 import com.alibaba.otter.canal.parse.CanalEventParser;
 import com.alibaba.otter.canal.parse.ha.CanalHAController;
 import com.alibaba.otter.canal.parse.inbound.mysql.MysqlEventParser;
-import com.alibaba.otter.canal.parse.support.AuthenticationInfo;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.ClientIdentity;
 import com.alibaba.otter.canal.server.embedded.CanalServerWithEmbedded;
-import com.alibaba.otter.canal.sink.AbstractCanalEventSink;
-import com.alibaba.otter.canal.sink.CanalEventSink;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
@@ -105,7 +101,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         this.sourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
         this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
         // init source database connection
-        DatabaseConnection.sourceConfig = sourceConfig;
+//        DatabaseConnection.sourceConfig = sourceConfig;
 //        DatabaseConnection.initSourceConnection();
 
         canalServer = CanalServerWithEmbedded.instance();

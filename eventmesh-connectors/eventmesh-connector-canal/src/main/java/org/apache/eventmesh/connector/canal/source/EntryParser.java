@@ -49,15 +49,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class EntryParser {
-//    private DbDialectFactory dbDialectFactory;
-
-    private static final String RETL_CLIENT_FLAG = "_SYNC";
-
-    private static final String compatibleMarkTable = "retl_client";
-
-    private static final String compatibleMarkInfoColumn = "client_info";
-
-    private static final String compatibleMarkIdentifierColumn = "client_identifier";
 
     /**
      * 将对应canal送出来的Entry对象解析为ConnectRecord
@@ -131,6 +122,12 @@ public class EntryParser {
     }
 
     private List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry) {
+        String schemaName = entry.getHeader().getSchemaName();
+        String tableName = entry.getHeader().getTableName();
+        if (!schemaName.equals(sourceConfig.getSourceConnectorConfig().getSchemaName()) || !tableName.equals(sourceConfig.getSourceConnectorConfig().getTableName())) {
+            return null;
+        }
+
         RowChange rowChange = null;
         try {
             rowChange = RowChange.parseFrom(entry.getStoreValue());
@@ -142,8 +139,6 @@ public class EntryParser {
             return null;
         }
 
-        String schemaName = entry.getHeader().getSchemaName();
-        String tableName = entry.getHeader().getTableName();
         EventType eventType = EventType.valueOf(rowChange.getEventType().name());
 
         // 处理下DDL操作

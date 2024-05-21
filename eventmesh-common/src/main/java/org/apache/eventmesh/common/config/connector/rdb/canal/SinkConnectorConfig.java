@@ -31,7 +31,15 @@ public class SinkConnectorConfig {
 
     private String url;
 
+    private String dbAddress;
+
+    private int dbPort;
+
     private String userName;
 
     private String passWord;
+
+    private String schemaName;
+
+    private String tableName;
 }

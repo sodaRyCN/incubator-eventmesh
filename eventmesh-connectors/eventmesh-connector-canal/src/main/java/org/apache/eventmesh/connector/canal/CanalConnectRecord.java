@@ -31,11 +31,6 @@ import lombok.Data;
 @Data
 public class CanalConnectRecord {
 
-    /**
-     * 内部维护的一套tableId，与manager中得到的table Id对应
-     */
-    private long tableId = -1;
-
     private String tableName;
 
     private String schemaName;
@@ -164,7 +159,6 @@ public class CanalConnectRecord {
 
     public CanalConnectRecord clone() {
         CanalConnectRecord record = new CanalConnectRecord();
-        record.setTableId(tableId);
         record.setTableName(tableName);
         record.setSchemaName(schemaName);
         record.setDdlSchemaName(ddlSchemaName);
@@ -195,7 +189,6 @@ public class CanalConnectRecord {
         result = prime * result + ((oldKeys == null) ? 0 : oldKeys.hashCode());
         result = prime * result + (int) (pairId ^ (pairId >>> 32));
         result = prime * result + ((schemaName == null) ? 0 : schemaName.hashCode());
-        result = prime * result + (int) (tableId ^ (tableId >>> 32));
         result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
         return result;
     }
@@ -249,9 +242,6 @@ public class CanalConnectRecord {
         } else if (!schemaName.equals(other.schemaName)) {
             return false;
         }
-        if (tableId != other.tableId) {
-            return false;
-        }
         if (tableName == null) {
             if (other.tableName != null) {
                 return false;
@@ -265,8 +255,7 @@ public class CanalConnectRecord {
     @Override
     public String toString() {
         return "CanalConnectRecord{" +
-            "tableId=" + tableId +
-            ", tableName='" + tableName + '\'' +
+            "tableName='" + tableName + '\'' +
             ", schemaName='" + schemaName + '\'' +
             ", eventType=" + eventType +
             ", executeTime=" + executeTime +

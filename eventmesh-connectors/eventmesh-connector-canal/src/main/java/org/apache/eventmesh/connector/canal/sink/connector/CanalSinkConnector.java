@@ -17,9 +17,12 @@
 
 package org.apache.eventmesh.connector.canal.sink.connector;
 
+import javafx.fxml.LoadException;
+
 import org.apache.eventmesh.common.config.connector.Config;
 
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
+import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.openconnect.api.ConnectorCreateService;
 import org.apache.eventmesh.openconnect.api.connector.ConnectorContext;
 import org.apache.eventmesh.openconnect.api.connector.SinkConnectorContext;
@@ -44,14 +47,14 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     @Override
     public void init(Config config) throws Exception {
         // init config for canal source connector
-
+        this.sinkConfig = (CanalSinkConfig)config;
     }
 
     @Override
     public void init(ConnectorContext connectorContext) throws Exception {
         // init config for canal source connector
         SinkConnectorContext sinkConnectorContext = (SinkConnectorContext) connectorContext;
-
+        this.sinkConfig = (CanalSinkConfig)sinkConnectorContext.getSinkConfig();
     }
 
     @Override
@@ -76,11 +79,36 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
 
     @Override
     public void put(List<ConnectRecord> sinkRecords) {
+        for (ConnectRecord connectRecord : sinkRecords) {
+            List<CanalConnectRecord> canalConnectRecordList = (List<CanalConnectRecord>)connectRecord.getData();
+            for (CanalConnectRecord canalConnectRecord : canalConnectRecordList) {
+                if (sinkConfig.getSinkConnectorConfig().getSchemaName().equals(canalConnectRecord.getSchemaName()) &&
+                        sinkConfig.getSinkConnectorConfig().getTableName().equals(canalConnectRecord.getTableName())) {
 
+
+                }
+            }
+        }
     }
 
     @Override
     public Sink create() {
         return new CanalSinkConnector();
+    }
+
+    /**
+     * 分析整个数据，将datas划分为多个批次. ddl sql前的DML并发执行，然后串行执行ddl后，再并发执行DML
+     *
+     * @return
+     */
+    private boolean isDdlDatas(List<CanalConnectRecord> canalConnectRecordList) {
+        boolean result = false;
+        for (CanalConnectRecord canalConnectRecord : canalConnectRecordList) {
+            result |= canalConnectRecord.getEventType().isDdl();
+            if (result && !canalConnectRecord.getEventType().isDdl()) {
+                throw new RuntimeException("ddl/dml can't be in one batch, it's may be a bug , pls submit issues.");
+            }
+        }
+        return result;
     }
 }
