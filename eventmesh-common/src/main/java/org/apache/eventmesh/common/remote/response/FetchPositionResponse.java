@@ -18,6 +18,12 @@ public class FetchPositionResponse extends BaseRemoteResponse {
         return response;
     }
 
+    public static FetchPositionResponse successResponse(RecordPosition recordPosition) {
+        FetchPositionResponse response = successResponse();
+        response.setRecordPosition(recordPosition);
+        return response;
+    }
+
     public static FetchPositionResponse failResponse(int code, String desc) {
         FetchPositionResponse response = new FetchPositionResponse();
         response.setSuccess(false);

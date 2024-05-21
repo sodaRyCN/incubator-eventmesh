@@ -30,12 +30,12 @@ public class S3RecordOffset extends RecordOffset {
 
     private Long offset;
 
-    public S3RecordOffset() {
-
-    }
-
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return S3RecordOffset.class;
+    }
+
+    public S3RecordOffset() {
+
     }
 }

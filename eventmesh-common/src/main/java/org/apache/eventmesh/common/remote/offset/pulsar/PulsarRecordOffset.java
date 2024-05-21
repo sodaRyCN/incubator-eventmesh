@@ -35,12 +35,12 @@ public class PulsarRecordOffset extends RecordOffset {
      */
     private Long queueOffset;
 
-    public PulsarRecordOffset() {
-
-    }
-
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return PulsarRecordOffset.class;
+    }
+
+    public PulsarRecordOffset() {
+
     }
 }

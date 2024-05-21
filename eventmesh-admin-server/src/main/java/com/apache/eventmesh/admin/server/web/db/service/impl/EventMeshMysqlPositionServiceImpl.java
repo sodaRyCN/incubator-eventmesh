@@ -32,8 +32,8 @@ public class EventMeshMysqlPositionServiceImpl extends ServiceImpl<EventMeshMysq
             return save(position);
         } else {
             if (old.getPosition() >= position.getPosition()) {
-                log.info("job [{}] report position [{}] less than db [{}]", position.getJobID(), position.getPosition(),
-                        old.getPosition());
+                log.info("job [{}] report position [{}] by runtime [{}] less than db position [{}] by [{}]",
+                        position.getJobID(), position.getPosition(), position.getAddress(), old.getPosition(), old.getAddress());
                 return true;
             }
             try {
@@ -48,7 +48,8 @@ public class EventMeshMysqlPositionServiceImpl extends ServiceImpl<EventMeshMysq
                     try {
                         historyService.save(history);
                     } catch (Exception e) {
-                        log.warn("save mysql position reporter changed history fail", e);
+                        log.warn("save job [{}] mysql position reporter changed history fail, now reporter [{}], old " +
+                                        "[{}]", position.getJobID(), position.getAddress(), old.getAddress(), e);
                     }
                 }
             }

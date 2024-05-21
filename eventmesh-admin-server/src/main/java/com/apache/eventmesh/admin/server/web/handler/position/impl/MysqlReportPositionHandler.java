@@ -6,14 +6,13 @@ import com.apache.eventmesh.admin.server.web.handler.position.PositionHandler;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
-import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.job.DataSourceType;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
+import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
 import org.apache.eventmesh.common.remote.response.FetchPositionResponse;
-import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
-import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -86,13 +85,22 @@ public class MysqlReportPositionHandler extends PositionHandler {
 
     @Override
     public FetchPositionResponse handler(FetchPositionRequest request, Metadata metadata) {
-        try {
-            EventMeshMysqlPosition position = positionService.getOne(Wrappers.<EventMeshMysqlPosition>query().eq("jobID"
-                    , request.getJobID()));
-            FetchPositionResponse response = FetchPositionResponse.successResponse();
-            return response;
-        } catch (Exception e) {
-            return FetchPositionResponse.failResponse(ErrorCode.INTERNAL_ERR,"");
+        EventMeshMysqlPosition position = positionService.getOne(Wrappers.<EventMeshMysqlPosition>query().eq("jobID"
+                , request.getJobID()));
+        FetchPositionResponse response = FetchPositionResponse.successResponse();
+        if (position != null) {
+            CanalRecordPartition partition = new CanalRecordPartition();
+            partition.setTimeStamp(position.getTimestamp());
+            partition.setJournalName(position.getJournalName());
+            CanalRecordOffset offset = new CanalRecordOffset();
+            offset.setOffset(position.getPosition());
+            RecordPosition recordPosition = new RecordPosition();
+            recordPosition.setRecordPartition(partition);
+            recordPosition.setRecordPartitionClazz(partition.getClass());
+            recordPosition.setRecordOffset(offset);
+            recordPosition.setRecordOffsetClazz(offset.getClass());
+            response.setRecordPosition(recordPosition);
         }
+        return response;
     }
 }

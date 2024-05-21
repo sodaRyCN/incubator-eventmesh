@@ -17,11 +17,10 @@
 
 package org.apache.eventmesh.common.remote.offset.canal;
 
-import org.apache.eventmesh.common.remote.offset.RecordOffset;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.apache.eventmesh.common.remote.offset.RecordOffset;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -30,12 +29,12 @@ public class CanalRecordOffset extends RecordOffset {
 
     private Long offset;
 
-    public CanalRecordOffset() {
-
-    }
-
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return CanalRecordOffset.class;
+    }
+
+    public CanalRecordOffset() {
+
     }
 }

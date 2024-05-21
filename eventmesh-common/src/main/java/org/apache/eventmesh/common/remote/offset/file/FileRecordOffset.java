@@ -30,12 +30,12 @@ public class FileRecordOffset extends RecordOffset {
 
     private Long offset;
 
-    public FileRecordOffset() {
-
-    }
-
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return FileRecordOffset.class;
+    }
+
+    public FileRecordOffset() {
+
     }
 }

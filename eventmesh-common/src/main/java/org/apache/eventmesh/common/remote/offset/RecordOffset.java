@@ -17,23 +17,9 @@
 
 package org.apache.eventmesh.common.remote.offset;
 
-public class RecordOffset {
-
-    private Class<? extends RecordOffset> clazz;
-
+public abstract class RecordOffset {
+    public abstract Class<? extends RecordOffset> getRecordOffsetClass();
     public RecordOffset() {
 
-    }
-
-    public Class<? extends RecordOffset> getRecordOffsetClass() {
-        return RecordOffset.class;
-    }
-
-    public Class<? extends RecordOffset> getClazz() {
-        return clazz;
-    }
-
-    public void setClazz(Class<? extends RecordOffset> clazz) {
-        this.clazz = clazz;
     }
 }

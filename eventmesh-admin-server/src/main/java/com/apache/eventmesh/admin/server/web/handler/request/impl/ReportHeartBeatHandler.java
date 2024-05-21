@@ -40,12 +40,10 @@ public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRe
             heartbeat.setRuntimeAddr(request.getAddress());
             try {
                 if (!heartbeatService.saveOrUpdateByRuntimeAddress(heartbeat)) {
-                    log.warn("save or update heartbeat fail, job [{}] runtime address [{}]", heartbeat.getJobID(),
-                            heartbeat.getRuntimeAddr());
+                    log.warn("save or update heartbeat request [{}] fail", request);
                 }
             } catch (Exception e) {
-                log.warn("save or update heartbeat job [{}] runtime address [{}] fail", heartbeat.getJobID(),
-                        heartbeat.getRuntimeAddr(), e);
+                log.warn("save or update heartbeat request [{}] fail", request, e);
             }
         });
 

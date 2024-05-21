@@ -32,12 +32,13 @@ public class CanalRecordPartition extends RecordPartition {
 
     private Long timeStamp;
 
-    public CanalRecordPartition() {
-        super();
-    }
-
+    @Override
     public Class<? extends RecordPartition> getRecordPartitionClass() {
         return CanalRecordPartition.class;
+    }
+
+    public CanalRecordPartition() {
+        super();
     }
 
     @Override

@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.common.remote.offset.kafka;
 
+import lombok.Data;
+import lombok.ToString;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.util.Objects;
-
-import lombok.Data;
-import lombok.ToString;
 
 
 @Data
@@ -33,12 +32,13 @@ public class KafkaRecordPartition extends RecordPartition {
 
     private Integer partition;
 
-    public KafkaRecordPartition() {
-        super();
-    }
-
+    @Override
     public Class<? extends RecordPartition> getRecordPartitionClass() {
         return KafkaRecordPartition.class;
+    }
+
+    public KafkaRecordPartition() {
+        super();
     }
 
     @Override

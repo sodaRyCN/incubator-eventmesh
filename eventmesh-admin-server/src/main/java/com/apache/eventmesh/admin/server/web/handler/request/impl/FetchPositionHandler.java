@@ -9,13 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
-import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
+import org.apache.eventmesh.common.remote.response.FetchPositionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class FetchPositionHandler extends BaseRequestHandler<FetchPositionRequest, EmptyAckResponse> {
+public class FetchPositionHandler extends BaseRequestHandler<FetchPositionRequest, FetchPositionResponse> {
 
     @Autowired
     DBThreadPool executor;
@@ -24,19 +24,18 @@ public class FetchPositionHandler extends BaseRequestHandler<FetchPositionReques
     PositionHandlerFactory positionHandlerFactory;
 
     @Override
-    protected EmptyAckResponse handler(FetchPositionRequest request, Metadata metadata) {
+    protected FetchPositionResponse handler(FetchPositionRequest request, Metadata metadata) {
         IFetchPositionHandler handler = positionHandlerFactory.getHandler(request.getDataSourceType());
         if (handler == null) {
             throw new AdminServerException(ErrorCode.BAD_REQUEST, String.format("illegal data source type [%s] not " +
                     "match any handler", request.getJobID()));
         }
-        executor.getExecutors().execute(() -> {
-            try {
-                handler.handler(request, metadata);
-            } catch (Exception e) {
-                log.warn("");
-            }
-        });
-        return new EmptyAckResponse();
+
+        try {
+            return handler.handler(request, metadata);
+        } catch (Exception e) {
+            log.warn("fetch request [{}] position fail", request, e);
+            return FetchPositionResponse.failResponse(ErrorCode.INTERNAL_ERR, e.getMessage());
+        }
     }
 }

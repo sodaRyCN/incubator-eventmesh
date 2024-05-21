@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.common.remote.offset.pulsar;
 
+import lombok.Data;
+import lombok.ToString;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.util.Objects;
-
-import lombok.Data;
-import lombok.ToString;
 
 
 @Data
@@ -34,12 +33,13 @@ public class PulsarRecordPartition extends RecordPartition {
     private Long queueId;
 
 
-    public PulsarRecordPartition() {
-        super();
-    }
-
+    @Override
     public Class<? extends RecordPartition> getRecordPartitionClass() {
         return PulsarRecordPartition.class;
+    }
+
+    public PulsarRecordPartition() {
+        super();
     }
 
     @Override

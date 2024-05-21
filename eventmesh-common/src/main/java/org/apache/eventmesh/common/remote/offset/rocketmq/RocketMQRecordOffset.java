@@ -35,12 +35,12 @@ public class RocketMQRecordOffset extends RecordOffset {
      */
     private Long queueOffset;
 
-    public RocketMQRecordOffset() {
-
-    }
-
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return RocketMQRecordOffset.class;
+    }
+
+    public RocketMQRecordOffset() {
+
     }
 }

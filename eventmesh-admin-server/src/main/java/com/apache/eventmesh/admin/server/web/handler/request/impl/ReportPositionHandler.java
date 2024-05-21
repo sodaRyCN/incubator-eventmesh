@@ -69,8 +69,7 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
             try {
                 handler.handler(request, metadata);
             } catch (Exception e) {
-                log.warn("handle position request fail, job id [{}] type [{}]", request.getJobID(),
-                        request.getDataSourceType(), e);
+                log.warn("handle position request fail, request [{}]", request, e);
             }
         });
         return new EmptyAckResponse();

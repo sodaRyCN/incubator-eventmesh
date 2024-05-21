@@ -17,12 +17,11 @@
 
 package org.apache.eventmesh.common.remote.offset.file;
 
+import lombok.Data;
+import lombok.ToString;
 import org.apache.eventmesh.common.remote.offset.RecordPartition;
 
 import java.util.Objects;
-
-import lombok.Data;
-import lombok.ToString;
 
 
 @Data
@@ -31,12 +30,13 @@ public class FileRecordPartition extends RecordPartition {
 
     private String fileName;
 
-    public FileRecordPartition() {
-        super();
-    }
-
+    @Override
     public Class<? extends RecordPartition> getRecordPartitionClass() {
         return FileRecordPartition.class;
+    }
+
+    public FileRecordPartition() {
+        super();
     }
 
     @Override

@@ -30,12 +30,12 @@ public class KafkaRecordOffset extends RecordOffset {
 
     private Long offset;
 
-    public KafkaRecordOffset() {
-
-    }
-
     @Override
     public Class<? extends RecordOffset> getRecordOffsetClass() {
         return KafkaRecordOffset.class;
+    }
+
+    public KafkaRecordOffset() {
+
     }
 }
