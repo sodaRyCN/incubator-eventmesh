@@ -11,4 +11,5 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 event-mesh:
   admin-server:
+    service-name: DEFAULT_GROUP@@em_adm_server
     port: 8081

@@ -9,5 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class AdminServerProperties {
     private int port;
-    private boolean enable;
+    private boolean enableSSL;
+    private String configurationPath;
+    private String configurationFile;
+    private String serviceName;
 }

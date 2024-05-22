@@ -6,4 +6,5 @@ public class ErrorCode {
     public static final int BAD_DB_DATA = 4002;
 
     public static final int INTERNAL_ERR = 5000;
+    public static final int STARTUP_CONFIG_MISS = 5001;
 }
