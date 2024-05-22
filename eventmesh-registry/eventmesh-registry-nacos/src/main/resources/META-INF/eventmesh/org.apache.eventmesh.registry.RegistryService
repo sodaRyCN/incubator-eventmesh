@@ -13,4 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-nacos=com.apache.eventmesh.admin.server.registry.NacosDiscoveryService
+nacos=org.apache.eventmesh.registry.nacos.NacosDiscoveryService

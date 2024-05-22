@@ -96,9 +96,7 @@ public class MysqlReportPositionHandler extends PositionHandler {
             offset.setOffset(position.getPosition());
             RecordPosition recordPosition = new RecordPosition();
             recordPosition.setRecordPartition(partition);
-            recordPosition.setRecordPartitionClazz(partition.getClass());
             recordPosition.setRecordOffset(offset);
-            recordPosition.setRecordOffsetClazz(offset.getClass());
             response.setRecordPosition(recordPosition);
         }
         return response;

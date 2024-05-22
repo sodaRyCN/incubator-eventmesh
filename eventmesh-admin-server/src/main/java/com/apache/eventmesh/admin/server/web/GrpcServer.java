@@ -24,7 +24,7 @@ public class GrpcServer extends BaseServer {
     @Override
     public void start() throws Exception {
         NettyServerBuilder serverBuilder = NettyServerBuilder.forPort(getPort()).addService(adminGrpcServer);
-        if (properties.isEnable()) {
+        if (properties.isEnableSSL()) {
             serverBuilder.sslContext(null);
         }
         server = serverBuilder.build();
@@ -41,7 +41,7 @@ public class GrpcServer extends BaseServer {
                     server.shutdownNow();
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             log.warn("destroy [{}] server fail", this.getClass().getSimpleName(), e);
         }
     }

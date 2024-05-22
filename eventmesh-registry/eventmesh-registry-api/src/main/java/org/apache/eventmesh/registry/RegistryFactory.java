@@ -21,7 +21,8 @@ public class RegistryFactory {
             log.error(errorMsg);
             throw new RuntimeException(errorMsg);
         }
-
+        log.info("build registry plugin [{}] by type [{}] success", registryServiceExt.getClass().getSimpleName(),
+                registryPluginType);
         return registryServiceExt;
     }
 }

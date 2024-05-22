@@ -12,13 +12,9 @@ import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ServiceInfo;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.ConfigService;
-import org.apache.eventmesh.common.utils.ConfigurationContextUtil;
 import org.apache.eventmesh.registry.NotifyEvent;
 import org.apache.eventmesh.registry.QueryInstances;
 import org.apache.eventmesh.registry.RegisterServerInfo;
@@ -48,8 +44,6 @@ public class NacosDiscoveryService implements RegistryService {
 
     private final AtomicBoolean initFlag = new AtomicBoolean(false);
 
-    private CommonConfiguration configuration;
-
     private NacosRegistryConfiguration nacosConf;
 
     private NamingService namingService;
@@ -73,10 +67,6 @@ public class NacosDiscoveryService implements RegistryService {
         if (!initFlag.compareAndSet(false, true)) {
             return;
         }
-        configuration = ConfigurationContextUtil.get(RegistryService.ConfigurationKey);
-        if (configuration == null) {
-            throw new RegistryException("registry config instance is null");
-        }
         nacosConf = ConfigService.getInstance().buildConfigInstance(NacosRegistryConfiguration.class);
         if (nacosConf == null) {
             log.info("nacos registry configuration is null");
@@ -93,12 +83,13 @@ public class NacosDiscoveryService implements RegistryService {
 
     private Properties buildProperties() {
         Properties properties = new Properties();
-        properties.setProperty(PropertyKeyConst.SERVER_ADDR, configuration.getRegistryAddr());
-        properties.setProperty(PropertyKeyConst.USERNAME, configuration.getEventMeshRegistryPluginUsername());
-        properties.setProperty(PropertyKeyConst.PASSWORD, configuration.getEventMeshRegistryPluginPassword());
         if (nacosConf == null) {
             return properties;
         }
+        properties.setProperty(PropertyKeyConst.SERVER_ADDR, nacosConf.getRegistryAddr());
+        properties.setProperty(PropertyKeyConst.USERNAME, nacosConf.getEventMeshRegistryPluginUsername());
+        properties.setProperty(PropertyKeyConst.PASSWORD, nacosConf.getEventMeshRegistryPluginPassword());
+
         String endpoint = nacosConf.getEndpoint();
         if (Objects.nonNull(endpoint) && endpoint.contains(":")) {
             int index = endpoint.indexOf(":");

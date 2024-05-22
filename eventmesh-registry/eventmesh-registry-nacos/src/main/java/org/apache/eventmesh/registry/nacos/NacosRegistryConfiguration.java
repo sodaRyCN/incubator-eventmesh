@@ -21,13 +21,14 @@ import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.client.naming.utils.UtilAndComs;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.eventmesh.common.config.CommonConfiguration;
 import org.apache.eventmesh.common.config.Config;
 import org.apache.eventmesh.common.config.ConfigField;
 
 @Data
 @NoArgsConstructor
 @Config(prefix = "eventMesh.registry.nacos")
-public class NacosRegistryConfiguration {
+public class NacosRegistryConfiguration extends CommonConfiguration {
 
     @ConfigField(field = PropertyKeyConst.ENDPOINT)
     private String endpoint;
