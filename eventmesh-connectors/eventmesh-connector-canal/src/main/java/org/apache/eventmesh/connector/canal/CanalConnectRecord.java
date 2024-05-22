@@ -31,9 +31,8 @@ import lombok.Data;
 @Data
 public class CanalConnectRecord {
 
-    private String tableName;
-
     private String schemaName;
+    private String tableName;
 
     /**
      * 变更数据的业务类型(I/U/D/C/A/E),与canal中的EntryProtocol中定义的EventType一致.
