@@ -48,11 +48,6 @@ public class MysqlDialect extends AbstractDbDialect {
         int majorVersion, int minorVersion) {
         super(jdbcTemplate, lobHandler, name, majorVersion, minorVersion);
         sqlTemplate = new MysqlSqlTemplate();
-
-        if (StringUtils.contains(databaseVersion, "-TDDL-")) {
-            isDRDS = true;
-//            initShardColumns();
-        }
     }
 
     public boolean isCharSpacePadded() {

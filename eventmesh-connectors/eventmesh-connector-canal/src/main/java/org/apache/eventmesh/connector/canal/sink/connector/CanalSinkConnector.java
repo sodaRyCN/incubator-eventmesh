@@ -25,6 +25,9 @@ import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
 import org.apache.eventmesh.connector.canal.DatabaseConnection;
 import org.apache.eventmesh.connector.canal.MysqlSqlTemplate;
+import org.apache.eventmesh.connector.canal.dialect.DbDialect;
+import org.apache.eventmesh.connector.canal.dialect.MysqlDialect;
+import org.apache.eventmesh.connector.canal.interceptor.SqlBuilderLoadInterceptor;
 import org.apache.eventmesh.connector.canal.sink.DbLoadData;
 import org.apache.eventmesh.connector.canal.sink.DbLoadData.TableLoadData;
 import org.apache.eventmesh.connector.canal.sink.DbLoadMerger;
@@ -49,6 +52,7 @@ import java.util.stream.Collectors;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.StatementCallback;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +65,10 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     private JdbcTemplate jdbcTemplate;
 
     private MysqlSqlTemplate mysqlSqlTemplate;
+
+    private SqlBuilderLoadInterceptor interceptor;
+
+    private DbDialect dbDialect;
 
     @Override
     public Class<? extends Config> configClass() {
@@ -81,6 +89,9 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
         DatabaseConnection.sinkConfig = this.sinkConfig;
         DatabaseConnection.initSinkConnection();
         jdbcTemplate = new JdbcTemplate(DatabaseConnection.sinkDataSource);
+        dbDialect = new MysqlDialect(jdbcTemplate, new DefaultLobHandler());
+        interceptor = new SqlBuilderLoadInterceptor();
+        interceptor.setDbDialect(dbDialect);
     }
 
     @Override
@@ -190,9 +201,9 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
      */
     private void doBefore(List<CanalConnectRecord> canalConnectRecordList, final DbLoadData loadData) {
         for (final CanalConnectRecord record : canalConnectRecordList) {
-            boolean filter = interceptor.before(context, record);
+            boolean filter = interceptor.before(sinkConfig, record);
             if (!filter) {
-                loadData.merge(item);// 进行分类
+                loadData.merge(record);// 进行分类
             }
         }
     }
@@ -213,11 +224,8 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             }
         }
 
-        if (context.getPipeline().getParameters().isDryRun()) {
-            doDryRun(context, batchDatas, true);
-        } else {
-            doTwoPhase(context, batchDatas, true);
-        }
+        doTwoPhase(context, batchDatas, true);
+
         batchDatas.clear();
 
         // 处理下insert/update
@@ -237,23 +245,20 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             }
         }
 
-        if (context.getPipeline().getParameters().isDryRun()) {
-            doDryRun(context, batchDatas, true);
-        } else {
-            doTwoPhase(context, batchDatas, true);
-        }
+        doTwoPhase(context, batchDatas, true);
+
         batchDatas.clear();
     }
 
     /**
      * 将对应的数据按照sql相同进行batch组合
      */
-    private List<List<CanalConnectRecord>> split(List<CanalConnectRecord> datas) {
+    private List<List<CanalConnectRecord>> split(List<CanalConnectRecord> records) {
         List<List<CanalConnectRecord>> result = new ArrayList<>();
-        if (datas == null || datas.size() == 0) {
+        if (records == null || records.isEmpty()) {
             return result;
         } else {
-            int[] bits = new int[datas.size()];// 初始化一个标记，用于标明对应的记录是否已分入某个batch
+            int[] bits = new int[records.size()];// 初始化一个标记，用于标明对应的记录是否已分入某个batch
             for (int i = 0; i < bits.length; i++) {
                 // 跳过已经被分入batch的
                 while (i < bits.length && bits[i] == 1) {
@@ -267,10 +272,10 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                 // 开始添加batch，最大只加入batchSize个数的对象
                 List<CanalConnectRecord> batch = new ArrayList<>();
                 bits[i] = 1;
-                batch.add(datas.get(i));
+                batch.add(records.get(i));
                 for (int j = i + 1; j < bits.length && batch.size() < batchSize; j++) {
-                    if (bits[j] == 0 && canBatch(datas.get(i), datas.get(j))) {
-                        batch.add(datas.get(j));
+                    if (bits[j] == 0 && canBatch(records.get(i), records.get(j))) {
+                        batch.add(records.get(j));
                         bits[j] = 1;// 修改为已加入
                     }
                 }
@@ -301,7 +306,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
     private void doTwoPhase(DbLoadContext context, List<List<CanalConnectRecord>> totalRows, boolean canBatch) {
         // 预处理下数据
         List<Future<Exception>> results = new ArrayList<Future<Exception>>();
-        for (List<EventData> rows : totalRows) {
+        for (List<CanalConnectRecord> rows : totalRows) {
             if (CollectionUtils.isEmpty(rows)) {
                 continue; // 过滤空记录
             }
@@ -315,7 +320,7 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             Exception ex = null;
             try {
                 ex = result.get();
-                for (EventData data : totalRows.get(i)) {
+                for (CanalConnectRecord data : totalRows.get(i)) {
                     interceptor.after(context, data);// 通知加载完成
                 }
             } catch (Exception e) {
@@ -323,20 +328,20 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             }
 
             if (ex != null) {
-                logger.warn("##load phase one failed!", ex);
+                log.warn("##load phase one failed!", ex);
                 partFailed = true;
             }
         }
 
-        if (true == partFailed) {
+        if (partFailed) {
             // if (CollectionUtils.isEmpty(context.getFailedDatas())) {
             // logger.error("##load phase one failed but failedDatas is empty!");
             // return;
             // }
 
             // 尝试的内容换成phase one跑的所有数据，避免因failed datas计算错误而导致丢数据
-            List<EventData> retryEventDatas = new ArrayList<EventData>();
-            for (List<EventData> rows : totalRows) {
+            List<CanalConnectRecord> retryEventDatas = new ArrayList<CanalConnectRecord>();
+            for (List<CanalConnectRecord> rows : totalRows) {
                 retryEventDatas.addAll(rows);
             }
 
@@ -345,19 +350,19 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
             // 可能为null，manager老版本数据序列化传输时，因为数据库中没有skipLoadException变量配置
             Boolean skipLoadException = context.getPipeline().getParameters().getSkipLoadException();
             if (skipLoadException != null && skipLoadException) {// 如果设置为允许跳过单条异常，则一条条执行数据load，准确过滤掉出错的记录，并进行日志记录
-                for (EventData retryEventData : retryEventDatas) {
+                for (CanalConnectRecord retryEventData : retryEventDatas) {
                     DbLoadWorker worker = new DbLoadWorker(context, Arrays.asList(retryEventData), false);// 强制设置batch为false
                     try {
                         Exception ex = worker.call();
                         if (ex != null) {
                             // do skip
-                            logger.warn("skip exception for data : {} , caused by {}",
+                            log.warn("skip exception for data : {} , caused by {}",
                                 retryEventData,
                                 ExceptionUtils.getFullStackTrace(ex));
                         }
                     } catch (Exception ex) {
                         // do skip
-                        logger.warn("skip exception for data : {} , caused by {}",
+                        log.warn("skip exception for data : {} , caused by {}",
                             retryEventData,
                             ExceptionUtils.getFullStackTrace(ex));
                     }
@@ -371,14 +376,14 @@ public class CanalSinkConnector implements Sink, ConnectorCreateService<Sink> {
                         throw ex; // 自己抛自己接
                     }
                 } catch (Exception ex) {
-                    logger.error("##load phase two failed!", ex);
-                    throw new LoadException(ex);
+                    log.error("##load phase two failed!", ex);
+                    throw new RuntimeException(ex);
                 }
             }
 
             // 清理failed data数据
-            for (EventData data : retryEventDatas) {
-                interceptor.after(context, data);// 通知加载完成
+            for (CanalConnectRecord record : retryEventDatas) {
+                interceptor.after(context, record);// 通知加载完成
             }
         }
 
