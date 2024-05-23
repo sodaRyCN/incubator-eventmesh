@@ -19,8 +19,6 @@ public class EventMeshDataSource implements Serializable {
 
     private Integer dataType;
 
-    private String address;
-
     private String description;
 
     private String configuration;
