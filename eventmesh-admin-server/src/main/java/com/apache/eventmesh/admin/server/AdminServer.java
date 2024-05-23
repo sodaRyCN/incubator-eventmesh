@@ -76,22 +76,28 @@ public class AdminServer implements Admin, ApplicationListener<ApplicationReadyE
     @Override
     @PostConstruct
     public void start() {
-
-        registryService.init();
+        if (configuration.isEventMeshRegistryPluginEnabled()) {
+            registryService.init();
+        }
     }
 
     @Override
     public void destroy() {
-        registryService.unRegister(adminServeInfo);
-        try {
-            Thread.sleep(3000);
-        }catch (InterruptedException ignore){}
-        registryService.shutdown();
+        if (configuration.isEventMeshRegistryPluginEnabled()) {
+            registryService.unRegister(adminServeInfo);
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ignore) {
+            }
+            registryService.shutdown();
+        }
     }
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        log.info("application is started, it's will register admin self");
-        registryService.register(adminServeInfo);
+        if (configuration.isEventMeshRegistryPluginEnabled()) {
+            log.info("application is started and registry plugin is enabled, it's will register admin self");
+            registryService.register(adminServeInfo);
+        }
     }
 }
