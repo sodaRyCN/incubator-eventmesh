@@ -3,7 +3,7 @@ package com.apache.eventmesh.admin.server.web.handler.request.impl;
 import com.apache.eventmesh.admin.server.AdminServerException;
 import com.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHeartbeat;
-import com.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHeartbeatService;
+import com.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHeartbeatExtService;
 import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRequest, EmptyAckResponse> {
     @Autowired
-    EventMeshRuntimeHeartbeatService heartbeatService;
+    EventMeshRuntimeHeartbeatExtService heartbeatExtService;
 
     @Autowired
     DBThreadPool executor;
@@ -39,7 +39,7 @@ public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRe
             heartbeat.setAdminAddr(IPUtils.getLocalAddress());
             heartbeat.setRuntimeAddr(request.getAddress());
             try {
-                if (!heartbeatService.saveOrUpdateByRuntimeAddress(heartbeat)) {
+                if (!heartbeatExtService.saveOrUpdateByRuntimeAddress(heartbeat)) {
                     log.warn("save or update heartbeat request [{}] fail", request);
                 }
             } catch (Exception e) {

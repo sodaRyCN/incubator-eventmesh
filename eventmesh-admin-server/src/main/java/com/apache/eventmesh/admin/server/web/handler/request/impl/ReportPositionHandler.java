@@ -3,7 +3,7 @@ package com.apache.eventmesh.admin.server.web.handler.request.impl;
 import com.apache.eventmesh.admin.server.AdminServerException;
 import com.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
-import com.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
+import com.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoExtService;
 import com.apache.eventmesh.admin.server.web.handler.position.IReportPositionHandler;
 import com.apache.eventmesh.admin.server.web.handler.position.PositionHandlerFactory;
 import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequest, EmptyAckResponse> {
     @Autowired
-    EventMeshJobInfoService jobInfoService;
+    EventMeshJobInfoExtService jobInfoExtService;
 
     @Autowired
     EventMeshDataSourceService dataSourceService;
@@ -61,7 +61,7 @@ public class ReportPositionHandler extends BaseRequestHandler<ReportPositionRequ
 
         executor.getExecutors().execute(() -> {
             try {
-                jobInfoService.updateJobState(jobID, request.getState());
+                jobInfoExtService.updateJobState(jobID, request.getState());
             } catch (Exception e) {
                 log.warn("update job id [{}] type [{}] state [{}] fail", request.getJobID(),
                         request.getDataSourceType(), request.getState(), e);

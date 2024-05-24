@@ -8,5 +8,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @description 针对表【event_mesh_mysql_position】的数据库操作Service
 * @createDate 2024-05-14 17:15:03
 */
-public interface EventMeshMysqlPositionService extends IService<EventMeshMysqlPosition> {
+public interface EventMeshMysqlPositionExtService extends IService<EventMeshMysqlPosition> {
+    boolean saveOrUpdateByJob(EventMeshMysqlPosition position);
 }
