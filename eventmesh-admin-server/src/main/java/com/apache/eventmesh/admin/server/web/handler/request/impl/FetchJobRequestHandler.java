@@ -1,35 +1,25 @@
 package com.apache.eventmesh.admin.server.web.handler.request.impl;
 
 import com.apache.eventmesh.admin.server.AdminServerException;
-import com.apache.eventmesh.admin.server.web.db.entity.EventMeshDataSource;
-import com.apache.eventmesh.admin.server.web.db.entity.EventMeshJobInfo;
-import com.apache.eventmesh.admin.server.web.db.service.EventMeshDataSourceService;
-import com.apache.eventmesh.admin.server.web.db.service.EventMeshJobInfoService;
+import com.apache.eventmesh.admin.server.web.db.entity.EventMeshJobDetail;
 import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
-import org.apache.eventmesh.common.remote.JobState;
 import org.apache.eventmesh.common.remote.exception.ErrorCode;
-import org.apache.eventmesh.common.remote.job.JobTransportType;
 import org.apache.eventmesh.common.remote.request.FetchJobRequest;
 import org.apache.eventmesh.common.remote.response.FetchJobResponse;
-import org.apache.eventmesh.common.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component
 @Slf4j
 public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, FetchJobResponse> {
 
     @Autowired
-    EventMeshJobInfoService jobInfoService;
+    EventMeshJobInfoExtService jobInfoExtService;
 
-    @Autowired
-    EventMeshDataSourceService dataSourceService;
+
 
 
     @Override
@@ -37,46 +27,27 @@ public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, 
         if (StringUtils.isBlank(request.getJobID())) {
             return FetchJobResponse.failResponse(ErrorCode.BAD_REQUEST, "job id is empty");
         }
+        int jobID;
+        try {
+            jobID = Integer.parseInt(request.getJobID());
+        } catch (NumberFormatException e) {
+            throw new AdminServerException(ErrorCode.BAD_REQUEST, String.format("illegal job id %s",
+                    request.getJobID()));
+        }
         FetchJobResponse response = FetchJobResponse.successResponse();
-        EventMeshJobInfo job = jobInfoService.getById(request.getJobID());
-        if (job == null) {
+        EventMeshJobDetail detail = jobInfoExtService.getJobDetail(jobID);
+        if (detail == null) {
             return response;
         }
-        response.setId(job.getJobID());
-        response.setName(job.getName());
-        EventMeshDataSource source = dataSourceService.getById(job.getSourceData());
-        EventMeshDataSource target = dataSourceService.getById(job.getTargetData());
-        if (source != null) {
-            if (!StringUtils.isBlank(source.getConfiguration())) {
-                try {
-                    response.setSourceConnectorConfig(JsonUtils.parseTypeReferenceObject(source.getConfiguration(),
-                            new TypeReference<Map<String, Object>>() {}));
-                } catch (Exception e) {
-                    log.warn("parse source config id [{}] fail", job.getSourceData(), e);
-                    throw new AdminServerException(ErrorCode.BAD_DB_DATA,"illegal source data source config");
-                }
-            }
-            response.setSourceConnectorDesc(source.getDescription());
-        }
-        if (target != null) {
-            if (!StringUtils.isBlank(target.getConfiguration())) {
-                try {
-                    response.setSinkConnectorConfig(JsonUtils.parseTypeReferenceObject(target.getConfiguration(),
-                            new TypeReference<Map<String, Object>>() {}));
-                } catch (Exception e) {
-                    log.warn("parse sink config id [{}] fail", job.getSourceData(), e);
-                    throw new AdminServerException(ErrorCode.BAD_DB_DATA,"illegal target data sink config");
-                }
-            }
-            response.setSinkConnectorDesc(target.getDescription());
-        }
-        response.setPosition(null);
-        JobState state = JobState.fromIndex(job.getState());
-        if (state == null) {
-            throw new AdminServerException(ErrorCode.BAD_DB_DATA,"illegal job state in db");
-        }
-        response.setState(state);
-        response.setTransportType(JobTransportType.getJobTransportType(job.getTransportType()));
+        response.setId(detail.getId());
+        response.setName(detail.getName());
+        response.setSourceConnectorConfig(detail.getSourceConnectorConfig());
+        response.setSourceConnectorDesc(detail.getSourceConnectorDesc());
+        response.setTransportType(detail.getTransportType());
+        response.setSinkConnectorConfig(detail.getSinkConnectorConfig());
+        response.setSourceConnectorDesc(detail.getSinkConnectorDesc());
+        response.setState(detail.getState());
+        response.setPosition(detail.getPosition());
         return response;
     }
 }

@@ -2,8 +2,8 @@ package com.apache.eventmesh.admin.server.web.handler.request.impl;
 
 import com.apache.eventmesh.admin.server.AdminServerException;
 import com.apache.eventmesh.admin.server.web.db.DBThreadPool;
-import com.apache.eventmesh.admin.server.web.handler.position.IFetchPositionHandler;
-import com.apache.eventmesh.admin.server.web.handler.position.PositionHandlerFactory;
+import com.apache.eventmesh.admin.server.web.service.position.IFetchPositionHandler;
+import com.apache.eventmesh.admin.server.web.service.position.PositionHandlerFactory;
 import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
@@ -32,7 +32,7 @@ public class FetchPositionHandler extends BaseRequestHandler<FetchPositionReques
         }
 
         try {
-            return handler.handler(request, metadata);
+            return FetchPositionResponse.successResponse(handler.handler(request, metadata));
         } catch (Exception e) {
             log.warn("fetch request [{}] position fail", request, e);
             return FetchPositionResponse.failResponse(ErrorCode.INTERNAL_ERR, e.getMessage());

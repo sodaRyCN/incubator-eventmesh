@@ -1,12 +1,10 @@
-package com.apache.eventmesh.admin.server.web.db.service.impl;
+package com.apache.eventmesh.admin.server.web.service.heatbeat;
 
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHeartbeat;
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHistory;
-import com.apache.eventmesh.admin.server.web.db.mapper.EventMeshRuntimeHeartbeatMapper;
-import com.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHeartbeatExtService;
+import com.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHeartbeatService;
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshRuntimeHistoryService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,18 +16,20 @@ import org.springframework.stereotype.Service;
 */
 @Service
 @Slf4j
-public class EventMeshRuntimeHeartbeatServiceExtImpl extends ServiceImpl<EventMeshRuntimeHeartbeatMapper, EventMeshRuntimeHeartbeat>
-    implements EventMeshRuntimeHeartbeatExtService {
+public class EventMeshRuntimeHeartbeatBizService {
 
     @Autowired
     EventMeshRuntimeHistoryService historyService;
 
-    @Override
+    @Autowired
+    EventMeshRuntimeHeartbeatService heartbeatService;
+
     public boolean saveOrUpdateByRuntimeAddress(EventMeshRuntimeHeartbeat entity) {
-        EventMeshRuntimeHeartbeat old = getOne(Wrappers.<EventMeshRuntimeHeartbeat>query().eq("runtimeAddr",
+        EventMeshRuntimeHeartbeat old = heartbeatService.getOne(Wrappers.<EventMeshRuntimeHeartbeat>query().eq(
+                "runtimeAddr",
                 entity.getRuntimeAddr()));
         if (old == null) {
-            return save(entity);
+            return heartbeatService.save(entity);
         } else {
             if (Long.parseLong(old.getReportTime()) >= Long.parseLong(entity.getReportTime())) {
                 log.info("update heartbeat record ignore, current report time late than db, job " +
@@ -37,7 +37,8 @@ public class EventMeshRuntimeHeartbeatServiceExtImpl extends ServiceImpl<EventMe
                 return true;
             }
             try {
-                return update(entity, Wrappers.<EventMeshRuntimeHeartbeat>update().eq("updateTime", old.getUpdateTime()));
+                return heartbeatService.update(entity, Wrappers.<EventMeshRuntimeHeartbeat>update().eq("updateTime",
+                        old.getUpdateTime()));
             } finally {
                 if (old.getJobID() != null && !old.getJobID().equals(entity.getJobID())) {
                     EventMeshRuntimeHistory history = new EventMeshRuntimeHistory();

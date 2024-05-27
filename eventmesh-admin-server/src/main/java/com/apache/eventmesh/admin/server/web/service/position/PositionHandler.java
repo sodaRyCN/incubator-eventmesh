@@ -1,4 +1,4 @@
-package com.apache.eventmesh.admin.server.web.handler.position;
+package com.apache.eventmesh.admin.server.web.service.position;
 
 import org.apache.eventmesh.common.remote.job.DataSourceType;
 

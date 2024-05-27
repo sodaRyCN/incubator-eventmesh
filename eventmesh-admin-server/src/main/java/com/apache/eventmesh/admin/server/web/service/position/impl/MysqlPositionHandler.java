@@ -1,8 +1,10 @@
-package com.apache.eventmesh.admin.server.web.handler.position.impl;
+package com.apache.eventmesh.admin.server.web.service.position.impl;
 
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshMysqlPosition;
+import com.apache.eventmesh.admin.server.web.db.entity.EventMeshPositionReporterHistory;
 import com.apache.eventmesh.admin.server.web.db.service.EventMeshMysqlPositionService;
-import com.apache.eventmesh.admin.server.web.handler.position.PositionHandler;
+import com.apache.eventmesh.admin.server.web.db.service.EventMeshPositionReporterHistoryService;
+import com.apache.eventmesh.admin.server.web.service.position.PositionHandler;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
@@ -12,7 +14,7 @@ import org.apache.eventmesh.common.remote.offset.canal.CanalRecordOffset;
 import org.apache.eventmesh.common.remote.offset.canal.CanalRecordPartition;
 import org.apache.eventmesh.common.remote.request.FetchPositionRequest;
 import org.apache.eventmesh.common.remote.request.ReportPositionRequest;
-import org.apache.eventmesh.common.remote.response.FetchPositionResponse;
+import org.apache.eventmesh.common.utils.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -21,13 +23,48 @@ import java.util.List;
 
 @Component
 @Slf4j
-public class MysqlReportPositionHandler extends PositionHandler {
+public class MysqlPositionHandler extends PositionHandler {
     @Autowired
     EventMeshMysqlPositionService positionService;
+
+    @Autowired
+    EventMeshPositionReporterHistoryService historyService;
 
     @Override
     protected DataSourceType getSourceType() {
         return DataSourceType.MYSQL;
+    }
+
+    public boolean saveOrUpdateByJob(EventMeshMysqlPosition position) {
+        EventMeshMysqlPosition old = positionService.getOne(Wrappers.<EventMeshMysqlPosition>query().eq("jobId",
+                position.getJobID()));
+        if (old == null) {
+            return positionService.save(position);
+        } else {
+            if (old.getPosition() >= position.getPosition()) {
+                log.info("job [{}] report position [{}] by runtime [{}] less than db position [{}] by [{}]",
+                        position.getJobID(), position.getPosition(), position.getAddress(), old.getPosition(), old.getAddress());
+                return true;
+            }
+            try {
+                return positionService.update(position, Wrappers.<EventMeshMysqlPosition>update().eq("updateTime",
+                        old.getUpdateTime()));
+            } finally {
+                if (old.getAddress()!= null && !old.getAddress().equals(position.getAddress())) {
+                    EventMeshPositionReporterHistory history = new EventMeshPositionReporterHistory();
+                    history.setRecord(JsonUtils.toJSONString(position));
+                    history.setJob(old.getJobID());
+                    history.setAddress(old.getAddress());
+                    log.info("job [{}] position reporter changed old [{}], now [{}]", position.getJobID(), old, position);
+                    try {
+                        historyService.save(history);
+                    } catch (Exception e) {
+                        log.warn("save job [{}] mysql position reporter changed history fail, now reporter [{}], old " +
+                                "[{}]", position.getJobID(), position.getAddress(), old.getAddress(), e);
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -62,7 +99,7 @@ public class MysqlReportPositionHandler extends PositionHandler {
                     position.setTimestamp(partition.getTimeStamp());
                     position.setJournalName(partition.getJournalName());
                 }
-                if (!positionService.saveOrUpdateByJob(position)) {
+                if (!saveOrUpdateByJob(position)) {
                     log.warn("update job position fail [{}]", request);
                     return false;
                 }
@@ -84,21 +121,20 @@ public class MysqlReportPositionHandler extends PositionHandler {
     }
 
     @Override
-    public FetchPositionResponse handler(FetchPositionRequest request, Metadata metadata) {
+    public RecordPosition handler(FetchPositionRequest request, Metadata metadata) {
         EventMeshMysqlPosition position = positionService.getOne(Wrappers.<EventMeshMysqlPosition>query().eq("jobID"
                 , request.getJobID()));
-        FetchPositionResponse response = FetchPositionResponse.successResponse();
+        RecordPosition recordPosition = null;
         if (position != null) {
             CanalRecordPartition partition = new CanalRecordPartition();
             partition.setTimeStamp(position.getTimestamp());
             partition.setJournalName(position.getJournalName());
             CanalRecordOffset offset = new CanalRecordOffset();
             offset.setOffset(position.getPosition());
-            RecordPosition recordPosition = new RecordPosition();
+            recordPosition = new RecordPosition();
             recordPosition.setRecordPartition(partition);
             recordPosition.setRecordOffset(offset);
-            response.setRecordPosition(recordPosition);
         }
-        return response;
+        return recordPosition;
     }
 }
