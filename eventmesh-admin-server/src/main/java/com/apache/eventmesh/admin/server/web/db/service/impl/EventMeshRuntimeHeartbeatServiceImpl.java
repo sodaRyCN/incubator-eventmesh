@@ -20,41 +20,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EventMeshRuntimeHeartbeatServiceImpl extends ServiceImpl<EventMeshRuntimeHeartbeatMapper, EventMeshRuntimeHeartbeat>
     implements EventMeshRuntimeHeartbeatService{
-
-    @Autowired
-    EventMeshRuntimeHistoryService historyService;
-
-    @Override
-    public boolean saveOrUpdateByRuntimeAddress(EventMeshRuntimeHeartbeat entity) {
-        EventMeshRuntimeHeartbeat old = getOne(Wrappers.<EventMeshRuntimeHeartbeat>query().eq("runtimeAddr",
-                entity.getRuntimeAddr()));
-        if (old == null) {
-            return save(entity);
-        } else {
-            if (Long.parseLong(old.getReportTime()) >= Long.parseLong(entity.getReportTime())) {
-                log.info("update heartbeat record ignore, current report time late than db, job " +
-                        "[{}], remote [{}]", entity.getJobID(), entity.getRuntimeAddr());
-                return true;
-            }
-            try {
-                return update(entity, Wrappers.<EventMeshRuntimeHeartbeat>update().eq("updateTime", old.getUpdateTime()));
-            } finally {
-                if (old.getJobID() != null && !old.getJobID().equals(entity.getJobID())) {
-                    EventMeshRuntimeHistory history = new EventMeshRuntimeHistory();
-                    history.setAddress(old.getAdminAddr());
-                    history.setJob(old.getJobID());
-                    try {
-                        historyService.save(history);
-                    } catch (Exception e) {
-                        log.warn("save runtime job changed history fail", e);
-                    }
-
-                    log.info("runtime [{}] changed job, old job [{}], now [{}]",entity.getRuntimeAddr(),old.getJobID(),
-                            entity.getJobID());
-                }
-            }
-        }
-    }
 }
 
 
