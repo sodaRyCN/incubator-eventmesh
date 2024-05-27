@@ -18,10 +18,8 @@ package org.apache.eventmesh.connector.canal.interceptor;
 
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
-import org.apache.eventmesh.connector.canal.MysqlSqlTemplate;
-import org.apache.eventmesh.connector.canal.SqlTemplate;
+import org.apache.eventmesh.connector.canal.template.SqlTemplate;
 import org.apache.eventmesh.connector.canal.dialect.DbDialect;
-import org.apache.eventmesh.connector.canal.dialect.MysqlDialect;
 import org.apache.eventmesh.connector.canal.model.EventColumn;
 import org.apache.eventmesh.connector.canal.model.EventType;
 
@@ -31,7 +29,6 @@ import org.springframework.util.CollectionUtils;
 
 /**
  * 计算下最新的sql语句
- *
  */
 public class SqlBuilderLoadInterceptor {
 
@@ -69,17 +66,6 @@ public class SqlBuilderLoadInterceptor {
                     shardColumns);
             }
         } else if (type.isUpdate()) {
-            // String[] keyColumns = buildColumnNames(currentData.getKeys());
-            // String[] otherColumns =
-            // buildColumnNames(currentData.getUpdatedColumns());
-            // boolean existOldKeys = false;
-            // for (String key : keyColumns) {
-            // // 找一下otherColumns是否有主键，存在就代表有主键变更
-            // if (ArrayUtils.contains(otherColumns, key)) {
-            // existOldKeys = true;
-            // break;
-            // }
-            // }
 
             boolean existOldKeys = !CollectionUtils.isEmpty(record.getOldKeys());
             boolean rowMode = sinkConfig.getSyncMode().isRow();

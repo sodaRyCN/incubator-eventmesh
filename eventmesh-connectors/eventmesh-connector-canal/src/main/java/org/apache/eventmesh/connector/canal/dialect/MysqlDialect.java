@@ -16,9 +16,7 @@
 
 package org.apache.eventmesh.connector.canal.dialect;
 
-import org.apache.eventmesh.connector.canal.MysqlSqlTemplate;
-
-import org.apache.commons.lang.StringUtils;
+import org.apache.eventmesh.connector.canal.template.MysqlSqlTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +34,6 @@ import org.springframework.jdbc.support.lob.LobHandler;
  */
 public class MysqlDialect extends AbstractDbDialect {
 
-    private boolean isDRDS = false;
     private Map<List<String>, String> shardColumns;
 
     public MysqlDialect(JdbcTemplate jdbcTemplate, LobHandler lobHandler) {
@@ -71,7 +68,7 @@ public class MysqlDialect extends AbstractDbDialect {
     }
 
     public boolean isDRDS() {
-        return isDRDS;
+        return false;
     }
 
     public String getShardColumns(String schema, String table) {

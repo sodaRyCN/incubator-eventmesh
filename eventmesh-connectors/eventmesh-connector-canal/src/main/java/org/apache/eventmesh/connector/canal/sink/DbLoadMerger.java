@@ -42,20 +42,19 @@ import lombok.extern.slf4j.Slf4j;
  * <pre>
  * 合并相同schema-table的变更记录.
  * pk相同的多条变更数据合并后的结果是：
- * 1, I 
- * 2, U 
- * 3, D 
+ * 1, I
+ * 2, U
+ * 3, D
  * 如果有一条I，多条U，merge成I;
  * 如果有多条U，取最晚的那条;
  * </pre>
- *
  */
 @Slf4j
 public class DbLoadMerger {
 
     /**
      * 将一批数据进行根据table+主键信息进行合并，保证一个表的一个pk记录只有一条结果
-     * 
+     *
      * @param eventDatas
      * @return
      */
@@ -64,7 +63,7 @@ public class DbLoadMerger {
         for (CanalConnectRecord eventData : eventDatas) {
             merge(eventData, result);
         }
-        return new LinkedList<CanalConnectRecord>(result.values());
+        return new LinkedList<>(result.values());
     }
 
     public static void merge(CanalConnectRecord record, Map<RowKey, CanalConnectRecord> result) {
@@ -97,7 +96,7 @@ public class DbLoadMerger {
             if (oldRecord.getEventType() == EventType.DELETE) {
                 result.put(rowKey, record);
             } else if (record.getEventType() == EventType.UPDATE
-                       || record.getEventType() == EventType.INSERT) {
+                || record.getEventType() == EventType.INSERT) {
                 // insert之前出现了update逻辑上不可能，唯一的可能性主要是Freedom的介入，人为的插入了一条Insert记录
                 // 不过freedom一般不建议Insert操作，只建议执行update/delete操作. update默认会走merge
                 // sql,不存在即插入
@@ -153,9 +152,9 @@ public class DbLoadMerger {
                     CanalConnectRecord mergeEventData = replaceColumnValue(record, oldRecord);
                     result.put(rowKey, mergeEventData);
                 } else if (oldRecord.getEventType() == EventType.UPDATE) {// 可能存在
-                                                                             // 1->2
-                                                                             // ,
-                                                                             // 2update的问题
+                    // 1->2
+                    // ,
+                    // 2update的问题
 
                     // 如果上一条变更是update的，把上一条存在而这一条不存在的数据拷贝到这一条中
                     CanalConnectRecord mergeEventData = replaceColumnValue(record, oldRecord);
@@ -195,7 +194,7 @@ public class DbLoadMerger {
 
     /**
      * 把old中的值存在而new中不存在的值合并到new中,并且把old中的变更前的主键保存到new中的变更前的主键.
-     * 
+     *
      * @param newRecord
      * @param oldRecord
      * @return
@@ -238,16 +237,16 @@ public class DbLoadMerger {
     public static class RowKey implements Serializable {
 
         private static final long serialVersionUID = -7369951798499581038L;
-        private String            schemaName;                              // tableId代表统配符时，需要指定schemaName
-        private String            tableName;                               // tableId代表统配符时，需要指定tableName
+        private String schemaName;                              // tableId代表统配符时，需要指定schemaName
+        private String tableName;                               // tableId代表统配符时，需要指定tableName
 
-        public RowKey(String schemaName, String tableName, List<EventColumn> keys){
+        public RowKey(String schemaName, String tableName, List<EventColumn> keys) {
             this.schemaName = schemaName;
             this.tableName = tableName;
             this.keys = keys;
         }
 
-        public RowKey(List<EventColumn> keys){
+        public RowKey(List<EventColumn> keys) {
             this.keys = keys;
         }
 

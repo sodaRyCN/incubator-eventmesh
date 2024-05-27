@@ -24,22 +24,21 @@ import java.util.List;
 
 /**
  * 将数据归类,按表和insert/update/delete类型进行分类
- * 
+ *
  * <pre>
  * 归类用途：对insert语句进行batch优化
  * 1. mysql索引的限制，需要避免insert并发执行
  * </pre>
- *
  */
 public class DbLoadData {
 
     private List<TableLoadData> tables = new ArrayList<TableLoadData>();
 
-    public DbLoadData(){
+    public DbLoadData() {
         // nothing
     }
 
-    public DbLoadData(List<CanalConnectRecord> records){
+    public DbLoadData(List<CanalConnectRecord> records) {
         for (CanalConnectRecord record : records) {
             merge(record);
         }
@@ -83,11 +82,11 @@ public class DbLoadData {
         private String schemaName;
 
         private String tableName;
-        private List<CanalConnectRecord> insertDatas  = new ArrayList<>();
+        private List<CanalConnectRecord> insertDatas = new ArrayList<>();
         private List<CanalConnectRecord> upadateDatas = new ArrayList<>();
-        private List<CanalConnectRecord> deleteDatas  = new ArrayList<>();
+        private List<CanalConnectRecord> deleteDatas = new ArrayList<>();
 
-        public TableLoadData(String schemaName, String tableName){
+        public TableLoadData(String schemaName, String tableName) {
             this.schemaName = schemaName;
             this.tableName = tableName;
         }

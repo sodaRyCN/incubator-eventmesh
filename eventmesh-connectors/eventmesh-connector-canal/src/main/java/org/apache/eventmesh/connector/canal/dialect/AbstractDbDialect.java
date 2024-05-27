@@ -16,29 +16,13 @@
 
 package org.apache.eventmesh.connector.canal.dialect;
 
-import org.apache.eventmesh.connector.canal.SqlTemplate;
+import org.apache.eventmesh.connector.canal.template.SqlTemplate;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.NestableRuntimeException;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.support.lob.LobHandler;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.Assert;
-
-import com.google.common.base.Function;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,16 +30,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractDbDialect implements DbDialect {
 
-    protected int                      databaseMajorVersion;
-    protected int                      databaseMinorVersion;
-    protected String                   databaseName;
+    protected int databaseMajorVersion;
+    protected int databaseMinorVersion;
+    protected String databaseName;
     protected SqlTemplate sqlTemplate;
-    protected JdbcTemplate             jdbcTemplate;
-    protected TransactionTemplate      transactionTemplate;
-    protected LobHandler               lobHandler;
+    protected JdbcTemplate jdbcTemplate;
+    protected TransactionTemplate transactionTemplate;
+    protected LobHandler lobHandler;
 //    protected Map<List<String>, Table> tables;
 
-    public AbstractDbDialect(final JdbcTemplate jdbcTemplate, LobHandler lobHandler){
+    public AbstractDbDialect(final JdbcTemplate jdbcTemplate, LobHandler lobHandler) {
         this.jdbcTemplate = jdbcTemplate;
         this.lobHandler = lobHandler;
         // 初始化transction
@@ -80,7 +64,7 @@ public abstract class AbstractDbDialect implements DbDialect {
     }
 
     public AbstractDbDialect(JdbcTemplate jdbcTemplate, LobHandler lobHandler, String name, int majorVersion,
-                             int minorVersion){
+        int minorVersion) {
         this.jdbcTemplate = jdbcTemplate;
         this.lobHandler = lobHandler;
         // 初始化transction

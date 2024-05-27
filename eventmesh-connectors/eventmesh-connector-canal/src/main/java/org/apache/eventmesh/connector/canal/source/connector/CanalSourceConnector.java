@@ -18,7 +18,13 @@
 package org.apache.eventmesh.connector.canal.source.connector;
 
 import org.apache.eventmesh.common.config.connector.Config;
+import org.apache.eventmesh.common.config.connector.offset.OffsetStorageConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSinkConfig;
 import org.apache.eventmesh.common.config.connector.rdb.canal.CanalSourceConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.SinkConnectorConfig;
+import org.apache.eventmesh.common.config.connector.rdb.canal.SourceConnectorConfig;
+import org.apache.eventmesh.common.remote.job.SyncConsistency;
+import org.apache.eventmesh.common.remote.job.SyncMode;
 import org.apache.eventmesh.common.remote.offset.RecordPosition;
 import org.apache.eventmesh.common.utils.JsonUtils;
 import org.apache.eventmesh.connector.canal.CanalConnectRecord;
@@ -72,13 +78,11 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
 
     private CanalSourceConfig sourceConfig;
 
-    private OffsetStorageReader offsetStorageReader;
-
     private CanalServerWithEmbedded canalServer;
 
     private ClientIdentity clientIdentity;
 
-    private String filter;
+    private String filter = null;
 
     private volatile boolean running = false;
 
@@ -99,7 +103,7 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     public void init(ConnectorContext connectorContext) throws Exception {
         SourceConnectorContext sourceConnectorContext = (SourceConnectorContext) connectorContext;
         this.sourceConfig = (CanalSourceConfig) sourceConnectorContext.getSourceConfig();
-        this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
+//        this.offsetStorageReader = sourceConnectorContext.getOffsetStorageReader();
         // init source database connection
 //        DatabaseConnection.sourceConfig = sourceConfig;
 //        DatabaseConnection.initSourceConnection();
@@ -175,8 +179,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             List<String> positions = new ArrayList<>();
             recordPositions.forEach(recordPosition -> {
                 Map<String, Object> recordPositionMap = new HashMap<>();
-                CanalRecordPartition canalRecordPartition = (CanalRecordPartition)(recordPosition.getRecordPartition());
-                CanalRecordOffset canalRecordOffset = (CanalRecordOffset)(recordPosition.getRecordOffset());
+                CanalRecordPartition canalRecordPartition = (CanalRecordPartition) (recordPosition.getRecordPartition());
+                CanalRecordOffset canalRecordOffset = (CanalRecordOffset) (recordPosition.getRecordOffset());
                 recordPositionMap.put("journalName", canalRecordPartition.getJournalName());
                 recordPositionMap.put("timestamp", canalRecordPartition.getTimeStamp());
                 recordPositionMap.put("position", canalRecordOffset.getOffset());
@@ -256,7 +260,8 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
             }
         } else { // perform with timeout
             while (running) {
-                message = canalServer.getWithoutAck(clientIdentity, sourceConfig.getBatchSize(), sourceConfig.getBatchTimeout(), TimeUnit.MILLISECONDS);
+                message =
+                    canalServer.getWithoutAck(clientIdentity, sourceConfig.getBatchSize(), sourceConfig.getBatchTimeout(), TimeUnit.MILLISECONDS);
                 if (message == null || message.getId() == -1L) { // empty
                     continue;
                 }
@@ -280,23 +285,26 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
         }
 
         EntryParser entryParser = new EntryParser();
-        List<CanalConnectRecord> connectRecordList = entryParser.parse(sourceConfig, entries);
-
-        CanalConnectRecord lastRecord = connectRecordList.get(connectRecordList.size() - 1);
-
-        CanalRecordPartition canalRecordPartition = new CanalRecordPartition();
-        canalRecordPartition.setJournalName(lastRecord.getJournalName());
-        canalRecordPartition.setTimeStamp(lastRecord.getExecuteTime());
-
-        CanalRecordOffset canalRecordOffset = new CanalRecordOffset();
-        canalRecordOffset.setOffset(lastRecord.getBinLogOffset());
-
-        ConnectRecord connectRecord = new ConnectRecord(canalRecordPartition, canalRecordOffset, System.currentTimeMillis());
-        connectRecord.addExtension("messageId", message.getId());
-        connectRecord.setData(connectRecordList);
 
         List<ConnectRecord> result = new ArrayList<>();
-        result.add(connectRecord);
+
+        List<CanalConnectRecord> connectRecordList = entryParser.parse(sourceConfig, entries);
+
+        if (connectRecordList != null && !connectRecordList.isEmpty()) {
+            CanalConnectRecord lastRecord = connectRecordList.get(connectRecordList.size() - 1);
+
+            CanalRecordPartition canalRecordPartition = new CanalRecordPartition();
+            canalRecordPartition.setJournalName(lastRecord.getJournalName());
+            canalRecordPartition.setTimeStamp(lastRecord.getExecuteTime());
+
+            CanalRecordOffset canalRecordOffset = new CanalRecordOffset();
+            canalRecordOffset.setOffset(lastRecord.getBinLogOffset());
+
+            ConnectRecord connectRecord = new ConnectRecord(canalRecordPartition, canalRecordOffset, System.currentTimeMillis());
+            connectRecord.addExtension("messageId", String.valueOf(message.getId()));
+            connectRecord.setData(connectRecordList);
+            result.add(connectRecord);
+        }
 
         return result;
     }
@@ -314,5 +322,57 @@ public class CanalSourceConnector implements Source, ConnectorCreateService<Sour
     @Override
     public Source create() {
         return new CanalSourceConnector();
+    }
+
+    public static void main(String[] args) {
+        CanalSourceConfig canalSourceConfig = new CanalSourceConfig();
+        canalSourceConfig.setCanalInstanceId(12L);
+        canalSourceConfig.setDesc("canalSourceDemo");
+        canalSourceConfig.setSlaveId(123L);
+        canalSourceConfig.setClientId((short) 1);
+        canalSourceConfig.setDestination("destinationGroup");
+        canalSourceConfig.setDdlSync(false);
+        canalSourceConfig.setFilterTableError(false);
+        canalSourceConfig.setSyncMode(SyncMode.ROW);
+        canalSourceConfig.setSyncConsistency(SyncConsistency.BASE);
+
+        SourceConnectorConfig sourceConnectorConfig = new SourceConnectorConfig();
+        sourceConnectorConfig.setConnectorName("canalSourceConnector");
+        sourceConnectorConfig.setDbAddress("127.0.0.1");
+        sourceConnectorConfig.setDbPort(3306);
+        sourceConnectorConfig.setUrl("jdbc:mysql://127.0.0.1:3306/test_db?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false");
+        sourceConnectorConfig.setSchemaName("test_db");
+        sourceConnectorConfig.setTableName("people");
+        sourceConnectorConfig.setUserName("root");
+        sourceConnectorConfig.setPassWord("mike920830");
+
+        OffsetStorageConfig offsetStorageConfig = new OffsetStorageConfig();
+        offsetStorageConfig.setOffsetStorageAddr("127.0.0.1:8081");
+        offsetStorageConfig.setOffsetStorageType("admin");
+        Map<String, String> extensionMap = new HashMap<>();
+        extensionMap.put("jobId", "1");
+        offsetStorageConfig.setExtensions(extensionMap);
+
+        canalSourceConfig.setSourceConnectorConfig(sourceConnectorConfig);
+        canalSourceConfig.setOffsetStorageConfig(offsetStorageConfig);
+
+        System.out.println(JsonUtils.toJSONString(canalSourceConfig));
+
+        CanalSinkConfig canalSinkConfig = new CanalSinkConfig();
+        canalSinkConfig.setSyncMode(SyncMode.ROW);
+
+        SinkConnectorConfig sinkConnectorConfig = new SinkConnectorConfig();
+        sinkConnectorConfig.setConnectorName("canalSinkConnector");
+        sinkConnectorConfig.setDbAddress("127.0.0.1");
+        sinkConnectorConfig.setDbPort(25000);
+        sinkConnectorConfig.setUrl("jdbc:mysql://127.0.0.1:25000/test_db?serverTimezone=GMT%2B8&characterEncoding=utf-8&useSSL=false");
+        sinkConnectorConfig.setSchemaName("test_db");
+        sinkConnectorConfig.setTableName("people");
+        sinkConnectorConfig.setUserName("clougence");
+        sinkConnectorConfig.setPassWord("123456");
+
+        canalSinkConfig.setSinkConnectorConfig(sinkConnectorConfig);
+
+        System.out.println(JsonUtils.toJSONString(canalSinkConfig));
     }
 }

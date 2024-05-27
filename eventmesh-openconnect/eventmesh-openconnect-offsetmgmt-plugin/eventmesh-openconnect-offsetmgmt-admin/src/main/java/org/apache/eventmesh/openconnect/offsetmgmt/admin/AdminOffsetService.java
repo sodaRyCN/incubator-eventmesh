@@ -247,11 +247,14 @@ public class AdminOffsetService implements OffsetManagementService {
         requestObserver = adminServiceStub.invokeBiStream(responseObserver);
 
         this.positionStore = new MemoryBasedKeyValueStore<>();
-        Map<RecordPartition, RecordOffset> initialRecordOffsetMap = JsonUtils.parseTypeReferenceObject(offsetStorageConfig.getExtensions().get("offset"),
-            new TypeReference<Map<RecordPartition, RecordOffset>>(){
-            });
-        log.info("init record offset {}", initialRecordOffsetMap);
-        positionStore.putAll(initialRecordOffsetMap);
+        String offset = offsetStorageConfig.getExtensions().get("offset");
+        if (offset != null) {
+            Map<RecordPartition, RecordOffset> initialRecordOffsetMap = JsonUtils.parseTypeReferenceObject(offset,
+                new TypeReference<Map<RecordPartition, RecordOffset>>(){
+                });
+            log.info("init record offset {}", initialRecordOffsetMap);
+            positionStore.putAll(initialRecordOffsetMap);
+        }
         this.jobState = JobState.RUNNING;
         this.jobId = offsetStorageConfig.getExtensions().get("jobId");
     }

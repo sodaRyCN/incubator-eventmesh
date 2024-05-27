@@ -124,7 +124,8 @@ public class EntryParser {
     private List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry) {
         String schemaName = entry.getHeader().getSchemaName();
         String tableName = entry.getHeader().getTableName();
-        if (!schemaName.equals(sourceConfig.getSourceConnectorConfig().getSchemaName()) || !tableName.equals(sourceConfig.getSourceConnectorConfig().getTableName())) {
+        if (!schemaName.equalsIgnoreCase(sourceConfig.getSourceConnectorConfig().getSchemaName()) ||
+            !tableName.equalsIgnoreCase(sourceConfig.getSourceConnectorConfig().getTableName())) {
             return null;
         }
 

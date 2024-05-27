@@ -2,10 +2,13 @@ package org.apache.eventmesh.runtime.connector;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.UnsafeByteOperations;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.eventmesh.api.consumer.Consumer;
 import org.apache.eventmesh.api.factory.StoragePluginFactory;
 import org.apache.eventmesh.api.producer.Producer;
@@ -178,8 +181,8 @@ public class ConnectorRuntime implements Runtime {
         connectorRuntimeConfig.setSinkConnectorConfig(jobResponse.getSinkConnectorConfig());
 
         ConnectorCreateService<?> sourceConnectorCreateService = ConnectorPluginFactory.createConnector(
-            connectorRuntimeConfig.getSourceConnectorType());
-        sourceConnector = (Source)sourceConnectorCreateService.create();
+            connectorRuntimeConfig.getSourceConnectorType() + "-Source");
+        sourceConnector = (Source) sourceConnectorCreateService.create();
 
         SourceConfig sourceConfig = (SourceConfig) ConfigUtil.parse(connectorRuntimeConfig.getSourceConnectorConfig(), sourceConnector.configClass());
         SourceConnectorContext sourceConnectorContext = new SourceConnectorContext();
@@ -202,8 +205,9 @@ public class ConnectorRuntime implements Runtime {
 
         sourceConnector.init(sourceConnectorContext);
 
-        ConnectorCreateService<?> sinkConnectorCreateService = ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSinkConnectorType());
-        sinkConnector = (Sink)sinkConnectorCreateService.create();
+        ConnectorCreateService<?> sinkConnectorCreateService =
+            ConnectorPluginFactory.createConnector(connectorRuntimeConfig.getSinkConnectorType() + "-Sink");
+        sinkConnector = (Sink) sinkConnectorCreateService.create();
 
         SinkConfig sinkConfig = (SinkConfig) ConfigUtil.parse(connectorRuntimeConfig.getSinkConnectorConfig(), sinkConnector.configClass());
         SinkConnectorContext sinkConnectorContext = new SinkConnectorContext();
@@ -256,9 +260,9 @@ public class ConnectorRuntime implements Runtime {
             requestObserver.onNext(request);
         }, 5, 5, TimeUnit.SECONDS);
 
-
         // start offsetMgmtService
         offsetManagementService.start();
+        isRunning = true;
         // start sinkService
         sinkService.execute(
             () -> {
@@ -287,7 +291,6 @@ public class ConnectorRuntime implements Runtime {
                     }
                 }
             });
-        isRunning = true;
     }
 
     @Override

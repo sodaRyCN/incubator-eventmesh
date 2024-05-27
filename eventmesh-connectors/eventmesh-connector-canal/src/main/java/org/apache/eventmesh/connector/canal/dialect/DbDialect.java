@@ -16,9 +16,7 @@
 
 package org.apache.eventmesh.connector.canal.dialect;
 
-import org.apache.eventmesh.connector.canal.SqlTemplate;
-
-import org.apache.ddlutils.model.Table;
+import org.apache.eventmesh.connector.canal.template.SqlTemplate;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.lob.LobHandler;
@@ -26,7 +24,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * 数据库方言定义接口
- *
  */
 public interface DbDialect {
 

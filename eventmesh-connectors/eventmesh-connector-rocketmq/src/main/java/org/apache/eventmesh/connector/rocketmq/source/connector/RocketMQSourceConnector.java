@@ -152,7 +152,6 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
                     recordPartition.setBroker(messageQueue.getBrokerName());
                     recordPartition.setTopic(messageQueue.getTopic());
                     recordPartition.setQueueId(messageQueue.getQueueId() + "");
-                    recordPartition.setClazz(recordPartition.getRecordPartitionClass());
                     RecordOffset recordOffset = offsetStorageReader.readOffset(recordPartition);
                     log.info("assigned messageQueue {}, recordOffset {}", messageQueue, recordOffset);
                     if (recordOffset != null) {
@@ -249,7 +248,6 @@ public class RocketMQSourceConnector implements Source, ConnectorCreateService<S
         rocketMQRecordPartition.setBroker(brokerName);
         rocketMQRecordPartition.setTopic(topic);
         rocketMQRecordPartition.setQueueId(queueId + "");
-        rocketMQRecordPartition.setClazz(rocketMQRecordPartition.getRecordPartitionClass());
 
         return rocketMQRecordPartition;
     }

@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package org.apache.eventmesh.connector.canal;
+package org.apache.eventmesh.connector.canal.template;
 
 /**
  * 默认的基于标准SQL实现的CRUD sql封装
- *
  */
 public abstract class AbstractSqlTemplate implements SqlTemplate {
 
@@ -103,16 +102,18 @@ public abstract class AbstractSqlTemplate implements SqlTemplate {
 
     /**
      * 针对DRDS改造, 在 update set 集合中, 排除 单个拆分键 的赋值操作
+     *
      * @param sql
      * @param columns
      * @param separator
      * @param excludeShardColumn 需要排除的 拆分列
      */
-    protected void appendExcludeSingleShardColumnEquals(StringBuilder sql, String[] columns, String separator, boolean updatePks, String excludeShardColumn) {
+    protected void appendExcludeSingleShardColumnEquals(StringBuilder sql, String[] columns, String separator, boolean updatePks,
+        String excludeShardColumn) {
         int size = columns.length;
         for (int i = 0; i < size; i++) {
             // 如果是DRDS数据库, 并且存在拆分键 且 等于当前循环列, 跳过
-            if(!updatePks && columns[i].equals(excludeShardColumn)){
+            if (!updatePks && columns[i].equals(excludeShardColumn)) {
                 continue;
             }
             sql.append(" ").append(appendEscape(columns[i])).append(" = ").append("? ");

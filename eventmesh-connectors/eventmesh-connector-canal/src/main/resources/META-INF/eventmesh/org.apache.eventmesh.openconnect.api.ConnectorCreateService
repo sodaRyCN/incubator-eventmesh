@@ -14,5 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-pluginType=offsetMgmt
-pluginName=admin
+
+MySQL-Source=org.apache.eventmesh.connector.canal.source.connector.CanalSourceConnector
+MySQL-Sink=org.apache.eventmesh.connector.canal.sink.connector.CanalSinkConnector

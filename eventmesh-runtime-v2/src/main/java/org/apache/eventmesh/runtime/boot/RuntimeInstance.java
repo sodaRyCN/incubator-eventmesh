@@ -22,11 +22,11 @@ import java.util.Random;
 @Slf4j
 public class RuntimeInstance {
 
-    private String adminServerAddr;
+    private String adminServerAddr = "127.0.0.1:8081";
 
     private Map<String, RegisterServerInfo> adminServerInfoMap = new HashMap<>();
 
-    private final RegistryService registryService;
+//    private final RegistryService registryService;
 
     private Runtime runtime;
 
@@ -38,42 +38,43 @@ public class RuntimeInstance {
 
     public RuntimeInstance(RuntimeInstanceConfig runtimeInstanceConfig) {
         this.runtimeInstanceConfig = runtimeInstanceConfig;
-        this.registryService = RegistryFactory.getInstance(runtimeInstanceConfig.getRegistryPluginType());
+//        this.registryService = RegistryFactory.getInstance(runtimeInstanceConfig.getRegistryPluginType());
     }
 
     public void init() throws Exception {
-        registryService.init();
+//        registryService.init();
         QueryInstances queryInstances = new QueryInstances();
         queryInstances.setServiceName(runtimeInstanceConfig.getAdminServiceName());
         queryInstances.setHealth(true);
-        List<RegisterServerInfo> adminServerRegisterInfoList = registryService.selectInstances(queryInstances);
-        if (!adminServerRegisterInfoList.isEmpty()) {
-            adminServerAddr = getRandomAdminServerAddr(adminServerRegisterInfoList);
-        } else {
-            throw new RuntimeException("admin server address is empty, please check");
-        }
+//        List<RegisterServerInfo> adminServerRegisterInfoList = registryService.selectInstances(queryInstances);
+//        if (!adminServerRegisterInfoList.isEmpty()) {
+//            adminServerAddr = getRandomAdminServerAddr(adminServerRegisterInfoList);
+//        } else {
+//            throw new RuntimeException("admin server address is empty, please check");
+//        }
         runtimeInstanceConfig.setAdminServerAddr(adminServerAddr);
         runtimeFactory = initRuntimeFactory(runtimeInstanceConfig);
         runtime = runtimeFactory.createRuntime(runtimeInstanceConfig);
         runtime.init();
     }
 
-    public void start() {
+    public void start() throws Exception {
         if (!StringUtils.isBlank(adminServerAddr)) {
 
-            registryService.subscribe((event) -> {
-                log.info("runtime receive registry event: {}", event);
-                List<RegisterServerInfo> registerServerInfoList = event.getInstances();
-                Map<String, RegisterServerInfo> registerServerInfoMap = new HashMap<>();
-                for (RegisterServerInfo registerServerInfo : registerServerInfoList) {
-                    registerServerInfoMap.put(registerServerInfo.getAddress(), registerServerInfo);
-                }
-                if (!registerServerInfoMap.isEmpty()) {
-                    adminServerInfoMap = registerServerInfoMap;
-                    updateAdminServerAddr();
-                }
-
-            }, runtimeInstanceConfig.getAdminServiceName());
+//            registryService.subscribe((event) -> {
+//                log.info("runtime receive registry event: {}", event);
+//                List<RegisterServerInfo> registerServerInfoList = event.getInstances();
+//                Map<String, RegisterServerInfo> registerServerInfoMap = new HashMap<>();
+//                for (RegisterServerInfo registerServerInfo : registerServerInfoList) {
+//                    registerServerInfoMap.put(registerServerInfo.getAddress(), registerServerInfo);
+//                }
+//                if (!registerServerInfoMap.isEmpty()) {
+//                    adminServerInfoMap = registerServerInfoMap;
+//                    updateAdminServerAddr();
+//                }
+//
+//            }, runtimeInstanceConfig.getAdminServiceName());
+            runtime.start();
             isStarted = true;
         } else {
             throw new RuntimeException("admin server address is empty, please check");
