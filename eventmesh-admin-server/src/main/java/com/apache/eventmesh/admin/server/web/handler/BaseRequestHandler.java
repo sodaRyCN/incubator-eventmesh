@@ -1,4 +1,4 @@
-package com.apache.eventmesh.admin.server.web.handler.request;
+package com.apache.eventmesh.admin.server.web.handler;
 
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
 import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;

@@ -1,4 +1,4 @@
-package com.apache.eventmesh.admin.server.web.handler.request;
+package com.apache.eventmesh.admin.server.web.handler;
 
 import org.apache.eventmesh.common.remote.request.BaseRemoteRequest;
 import org.apache.eventmesh.common.remote.response.BaseRemoteResponse;

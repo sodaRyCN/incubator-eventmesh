@@ -1,12 +1,11 @@
-package com.apache.eventmesh.admin.server.web.handler.request.impl;
+package com.apache.eventmesh.admin.server.web.handler.impl;
 
-import com.apache.eventmesh.admin.server.AdminServerException;
 import com.apache.eventmesh.admin.server.web.db.DBThreadPool;
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshRuntimeHeartbeat;
-import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
+import com.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
+import com.apache.eventmesh.admin.server.web.service.heatbeat.EventMeshRuntimeHeartbeatBizService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
-import org.apache.eventmesh.common.remote.exception.ErrorCode;
 import org.apache.eventmesh.common.remote.request.ReportHeartBeatRequest;
 import org.apache.eventmesh.common.remote.response.EmptyAckResponse;
 import org.apache.eventmesh.common.utils.IPUtils;
@@ -17,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRequest, EmptyAckResponse> {
     @Autowired
-    EventMeshRuntimeHeartbeatExtService heartbeatExtService;
+    EventMeshRuntimeHeartbeatBizService heartbeatBizService;
 
     @Autowired
     DBThreadPool executor;
@@ -30,15 +29,15 @@ public class ReportHeartBeatHandler extends BaseRequestHandler<ReportHeartBeatRe
             try {
                 job = Integer.parseInt(request.getJobID());
             } catch (NumberFormatException e) {
-                throw new AdminServerException(ErrorCode.BAD_REQUEST, String.format("illegal job id %s",
-                        request.getJobID()));
+                log.warn("runtime {} report heartbeat fail, illegal job id {}", request.getAddress(), request.getJobID());
+                return;
             }
             heartbeat.setJobID(job);
             heartbeat.setReportTime(request.getReportedTimeStamp());
             heartbeat.setAdminAddr(IPUtils.getLocalAddress());
             heartbeat.setRuntimeAddr(request.getAddress());
             try {
-                if (!heartbeatExtService.saveOrUpdateByRuntimeAddress(heartbeat)) {
+                if (!heartbeatBizService.saveOrUpdateByRuntimeAddress(heartbeat)) {
                     log.warn("save or update heartbeat request [{}] fail", request);
                 }
             } catch (Exception e) {

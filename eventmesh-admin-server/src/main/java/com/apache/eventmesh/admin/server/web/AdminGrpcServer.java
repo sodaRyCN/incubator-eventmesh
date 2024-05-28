@@ -1,8 +1,8 @@
 package com.apache.eventmesh.admin.server.web;
 
-import com.apache.eventmesh.admin.server.AdminServerException;
-import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
-import com.apache.eventmesh.admin.server.web.handler.request.RequestHandlerFactory;
+import com.apache.eventmesh.admin.server.AdminServerRuntimeException;
+import com.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
+import com.apache.eventmesh.admin.server.web.handler.RequestHandlerFactory;
 import io.grpc.stub.ServerCallStreamObserver;
 import io.grpc.stub.StreamObserver;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +43,8 @@ public class AdminGrpcServer extends AdminServiceGrpc.AdminServiceImplBase {
             return PayloadUtil.from(response);
         } catch (Exception e) {
             log.warn("process payload {} fail", value.getMetadata().getType(), e);
-            if (e instanceof AdminServerException) {
-                return PayloadUtil.from(FailResponse.build(((AdminServerException)e).getCode(),
+            if (e instanceof AdminServerRuntimeException) {
+                return PayloadUtil.from(FailResponse.build(((AdminServerRuntimeException)e).getCode(),
                         e.getMessage()));
             }
             return PayloadUtil.from(FailResponse.build(ErrorCode.INTERNAL_ERR, "admin server internal err"));

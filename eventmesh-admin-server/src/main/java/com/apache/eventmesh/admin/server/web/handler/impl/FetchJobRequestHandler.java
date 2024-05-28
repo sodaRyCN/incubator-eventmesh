@@ -1,8 +1,9 @@
-package com.apache.eventmesh.admin.server.web.handler.request.impl;
+package com.apache.eventmesh.admin.server.web.handler.impl;
 
-import com.apache.eventmesh.admin.server.AdminServerException;
+import com.apache.eventmesh.admin.server.AdminServerRuntimeException;
 import com.apache.eventmesh.admin.server.web.db.entity.EventMeshJobDetail;
-import com.apache.eventmesh.admin.server.web.handler.request.BaseRequestHandler;
+import com.apache.eventmesh.admin.server.web.handler.BaseRequestHandler;
+import com.apache.eventmesh.admin.server.web.service.job.EventMeshJobInfoBizService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.eventmesh.common.protocol.grpc.adminserver.Metadata;
@@ -17,25 +18,22 @@ import org.springframework.stereotype.Component;
 public class FetchJobRequestHandler extends BaseRequestHandler<FetchJobRequest, FetchJobResponse> {
 
     @Autowired
-    EventMeshJobInfoExtService jobInfoExtService;
-
-
-
+    EventMeshJobInfoBizService jobInfoBizService;
 
     @Override
     public FetchJobResponse handler(FetchJobRequest request, Metadata metadata) {
         if (StringUtils.isBlank(request.getJobID())) {
-            return FetchJobResponse.failResponse(ErrorCode.BAD_REQUEST, "job id is empty");
+            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, "job id is empty");
         }
         int jobID;
         try {
             jobID = Integer.parseInt(request.getJobID());
         } catch (NumberFormatException e) {
-            throw new AdminServerException(ErrorCode.BAD_REQUEST, String.format("illegal job id %s",
+            throw new AdminServerRuntimeException(ErrorCode.BAD_REQUEST, String.format("illegal job id %s",
                     request.getJobID()));
         }
         FetchJobResponse response = FetchJobResponse.successResponse();
-        EventMeshJobDetail detail = jobInfoExtService.getJobDetail(jobID);
+        EventMeshJobDetail detail = jobInfoBizService.getJobDetail(request, metadata);
         if (detail == null) {
             return response;
         }

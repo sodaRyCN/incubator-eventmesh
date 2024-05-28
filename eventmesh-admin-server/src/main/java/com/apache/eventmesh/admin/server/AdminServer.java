@@ -33,7 +33,7 @@ public class AdminServer implements Admin, ApplicationListener<ApplicationReadyE
         configuration =
                 ConfigService.getInstance().buildConfigInstance(CommonConfiguration.class);
         if (configuration == null) {
-            throw new AdminServerException(ErrorCode.STARTUP_CONFIG_MISS, "common configuration file miss");
+            throw new AdminServerRuntimeException(ErrorCode.STARTUP_CONFIG_MISS, "common configuration file miss");
         }
         this.adminServeInfo = new RegisterServerInfo();
 
