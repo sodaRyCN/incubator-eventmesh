@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.eventmesh.connector.canal.source.table.RdbTableMgr;
 import org.springframework.util.CollectionUtils;
 
 import com.alibaba.otter.canal.protocol.CanalEntry;
@@ -46,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EntryParser {
 
-    public List<CanalConnectRecord> parse(CanalSourceConfig sourceConfig, List<Entry> datas) {
+    public static List<CanalConnectRecord> parse(CanalSourceConfig sourceConfig, List<Entry> datas, RdbTableMgr tableMgr) {
         List<CanalConnectRecord> recordList = new ArrayList<>();
         List<Entry> transactionDataBuffer = new ArrayList<>();
         try {
@@ -59,7 +60,7 @@ public class EntryParser {
                         break;
                     case TRANSACTIONEND:
                         for (Entry bufferEntry : transactionDataBuffer) {
-                            List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry);
+                            List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry, tableMgr);
                             if (CollectionUtils.isEmpty(recordParsedList)) {
                                 continue;
                             }
@@ -81,7 +82,7 @@ public class EntryParser {
             }
 
             for (Entry bufferEntry : transactionDataBuffer) {
-                List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry);
+                List<CanalConnectRecord> recordParsedList = internParse(sourceConfig, bufferEntry, tableMgr);
                 if (CollectionUtils.isEmpty(recordParsedList)) {
                     continue;
                 }
@@ -102,11 +103,10 @@ public class EntryParser {
         return recordList;
     }
 
-    private List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry) {
+    private static List<CanalConnectRecord> internParse(CanalSourceConfig sourceConfig, Entry entry, RdbTableMgr tableMgr) {
         String schemaName = entry.getHeader().getSchemaName();
         String tableName = entry.getHeader().getTableName();
-        if (!schemaName.equalsIgnoreCase(sourceConfig.getSourceConnectorConfig().getSchemaName())
-            || !tableName.equalsIgnoreCase(sourceConfig.getSourceConnectorConfig().getTableName())) {
+        if (tableMgr.getTable(schemaName, tableName) == null) {
             return null;
         }
 
@@ -152,7 +152,8 @@ public class EntryParser {
         return recordList;
     }
 
-    private CanalConnectRecord internParse(CanalSourceConfig canalSourceConfig, Entry entry, RowChange rowChange, RowData rowData) {
+    private static CanalConnectRecord internParse(CanalSourceConfig canalSourceConfig, Entry entry, RowChange rowChange,
+                                            RowData rowData) {
         CanalConnectRecord canalConnectRecord = new CanalConnectRecord();
         canalConnectRecord.setTableName(entry.getHeader().getTableName());
         canalConnectRecord.setSchemaName(entry.getHeader().getSchemaName());
@@ -240,7 +241,8 @@ public class EntryParser {
         return canalConnectRecord;
     }
 
-    private void checkUpdateKeyColumns(Map<String, EventColumn> oldKeyColumns, Map<String, EventColumn> keyColumns) {
+    private static void checkUpdateKeyColumns(Map<String, EventColumn> oldKeyColumns,
+                                           Map<String, EventColumn> keyColumns) {
         if (oldKeyColumns.isEmpty()) {
             return;
         }
@@ -262,7 +264,7 @@ public class EntryParser {
         }
     }
 
-    private EventColumn copyEventColumn(Column column, boolean isUpdate) {
+    private static EventColumn copyEventColumn(Column column, boolean isUpdate) {
         EventColumn eventColumn = new EventColumn();
         eventColumn.setIndex(column.getIndex());
         eventColumn.setKey(column.getIsKey());
