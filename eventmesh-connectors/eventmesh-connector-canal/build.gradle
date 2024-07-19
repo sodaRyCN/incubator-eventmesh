@@ -26,7 +26,7 @@ dependencies {
     implementation "org.locationtech.jts:jts-core:1.19.0"
     implementation project(":eventmesh-common")
     implementation canal
-    implementation "com.alibaba:druid:1.2.6"
+    implementation "com.alibaba:druid:1.2.22"
     implementation 'com.mysql:mysql-connector-j'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
